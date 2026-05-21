@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — ROV{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Filiais ativas</div>
+    <div class="kpi-value">{{ stats.filiais_ativas }}</div>
+  </div>
+  <div class="kpi-card" style="border-left-color:#1D3557">
+    <div class="kpi-label">Contas no plano</div>
+    <div class="kpi-value">{{ stats.total_contas }}</div>
+  </div>
+  <div class="kpi-card" style="border-left-color:#f59e0b">
+    <div class="kpi-label">Centros de Custo</div>
+    <div class="kpi-value">{{ stats.total_ccus }}</div>
+  </div>
+  <div class="kpi-card" style="border-left-color:#8b5cf6">
+    <div class="kpi-label">Versões de Budget</div>
+    <div class="kpi-value">{{ stats.versoes_budget }}</div>
+  </div>
+  <div class="kpi-card" style="border-left-color:#ec4899">
+    <div class="kpi-label">Linhas de Budget</div>
+    <div class="kpi-value">{{ stats.linhas_budget }}</div>
+  </div>
+  <div class="kpi-card" style="border-left-color:#06b6d4">
+    <div class="kpi-label">Registros Realizados</div>
+    <div class="kpi-value">{{ stats.linhas_realizado }}</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div class="card">
+    <div class="card-title">Módulos do sistema</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a href="/cadastros/filiais" class="btn btn-secondary" style="justify-content:flex-start;gap:12px">
+        <span>⊞</span> Cadastros (Filiais, Contas, CCU, Usuários)
+      </a>
+      <a href="/budget/" class="btn btn-secondary" style="justify-content:flex-start;gap:12px">
+        <span>₿</span> Budget — Lançamento e aprovação
+      </a>
+      <a href="/receitas/" class="btn btn-secondary" style="justify-content:flex-start;gap:12px">
+        <span>$</span> Receitas Pós-Venda
+      </a>
+      <a href="/headcount/" class="btn btn-secondary" style="justify-content:flex-start;gap:12px">
+        <span>⚇</span> Headcount & Folha
+      </a>
+      <a href="/opex/" class="btn btn-secondary" style="justify-content:flex-start;gap:12px">
+        <span>◉</span> OPEX — Despesas operacionais
+      </a>
+      <a href="/analise/" class="btn btn-secondary" style="justify-content:flex-start;gap:12px">
+        <span>▦</span> Análise & Relatórios
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Versões de Budget</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Ano</th><th>Cenário</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for v in versoes %}
+          <tr>
+            <td>{{ v.id }}</td>
+            <td>{{ v.ano }}</td>
+            <td>{{ v.cenario }}</td>
+            <td>
+              {% if v.status == 'aprovado' %}
+                <span class="badge badge-ativo">Aprovado</span>
+              {% elif v.status == 'em_revisao' %}
+                <span class="badge" style="background:#fef3c7;color:#92400e">Em revisão</span>
+              {% else %}
+                <span class="badge badge-inativo">{{ v.status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="color:var(--cinza2);text-align:center">Nenhuma versão.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
