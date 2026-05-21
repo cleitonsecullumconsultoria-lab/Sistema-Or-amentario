@@ -1,0 +1,16 @@
+# dados sensíveis — não versionar o Excel com dados reais
+data/*.xlsx
+data/*.xls
+data/*.csv
+
+# saídas geradas
+exports/
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
