@@ -74,7 +74,7 @@ async def comissoes(request: Request, ano: int = 2024):
     real = real_df[(real_df["ano"] == ano) & (real_df["conta_id"].isin(comissao_contas))]
 
     filiais_map = {r["id"]: r.to_dict() for _, r in filiais_df.iterrows()}
-    contas_map = {r["id"]: r for _, r in contas_df.iterrows()}
+    contas_map = {r["id"]: r.to_dict() for _, r in contas_df.iterrows()}
 
     rows = []
     for (fid, cid), grp in real.groupby(["filial_id", "conta_id"]):

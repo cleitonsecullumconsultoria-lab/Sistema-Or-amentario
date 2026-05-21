@@ -34,7 +34,7 @@ async def colaboradores(request: Request):
         f = filiais_map.get(c.get("filial_id"))
         sal = float(c.get("salario_base", 0) or 0)
         enc = sal * 0.5
-        ben = float(c.get("beneficios", 0) or 0)
+        ben = float(c.get("beneficios", 0) or 0) if "beneficios" in c else 0
         tot = sal + enc + ben
         total_sal += sal; total_enc += enc; total_ben += ben; total_mes += tot
         colab.append({
@@ -113,7 +113,7 @@ async def folha(request: Request):
         nome = f.get("nome", "?") if f else "?"
         sal = float(c.get("salario_base", 0) or 0)
         enc = sal * 0.5
-        ben = float(c.get("beneficios", 0) or 0)
+        ben = float(c.get("beneficios", 0) or 0) if "beneficios" in c else 0
         if codigo not in por_filial:
             por_filial[codigo] = {"filial_codigo": codigo, "filial_nome": nome, "n_colab": 0,
                                    "sal": 0, "enc": 0, "ben": 0, "mes": 0}
