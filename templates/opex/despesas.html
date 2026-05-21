@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}OPEX — ROV{% endblock %}
+{% block page_title %}Despesas Operacionais{% endblock %}
+{% block page_bc %}/ opex / {{ filial_nome }}{% endblock %}
+
+{% block topbar_actions %}
+<select class="filter" onchange="irFiltro()" id="sel-filial">
+  <option value="">Grupo consolidado</option>
+  {% for f in filiais %}
+  <option value="{{ f.id }}" {% if f.id == filial_id %}selected{% endif %}>
+    {{ f.codigo }} · {{ f.nome }}
+  </option>
+  {% endfor %}
+</select>
+<select class="filter" onchange="irFiltro()" id="sel-ano">
+  {% for a in anos_disponiveis %}
+  <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+  {% endfor %}
+</select>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-row">
+  <div class="kpi kpi-accent">
+    <div class="kpi-label">OPEX orçado {{ ano }}</div>
+    <div class="kpi-value">{{ kpis.total_fmt }}</div>
+    <div class="kpi-sub">{{ filial_nome }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Receitas</div>
+    <div class="kpi-value">{{ kpis.receitas_fmt }}</div>
+    <div class="kpi-sub">base de cálculo</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">OPEX / Receita</div>
+    <div class="kpi-value">{{ kpis.pct_receita_fmt }}</div>
+    <div class="kpi-sub">indicador</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-receipt" style="color:#854F0B"></i>
+    <span class="card-title">OPEX · {{ filial_nome }} · {{ ano }}</span>
+    <span class="card-sub">· R$ mil</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Categoria</th><th>Conta</th>
+        <th class="r">Jan</th><th class="r">Fev</th><th class="r">Mar</th>
+        <th class="r">Q1</th><th class="r">Total anual</th><th class="r">% OPEX</th>
+      </tr>
+      {% for grupo in grupos %}
+      <tr class="tbl-section">
+        <td colspan="8">{{ grupo.label }}</td>
+      </tr>
+      {% for r in grupo.linhas %}
+      <tr>
+        <td class="bold">{{ r.nome }}</td>
+        <td class="mono" style="color:var(--text-3)">{{ r.codigo }}</td>
+        <td class="r">{{ r.jan }}</td>
+        <td class="r">{{ r.fev }}</td>
+        <td class="r">{{ r.mar }}</td>
+        <td class="r">{{ r.q1 }}</td>
+        <td class="r bold">{{ r.total_fmt }}</td>
+        <td class="r">{{ r.pct_opex | round(1) }}%</td>
+      </tr>
+      {% endfor %}
+      {% endfor %}
+      <tr class="tbl-total">
+        <td>Total OPEX</td><td></td>
+        <td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td>
+        <td class="r">{{ kpis.total_fmt }}</td>
+        <td class="r">100%</td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function irFiltro() {
+  const f = document.getElementById('sel-filial').value;
+  const a = document.getElementById('sel-ano').value;
+  window.location = '/opex/despesas?ano=' + a + (f ? '&filial_id=' + f : '');
+}
+</script>
+{% endblock %}

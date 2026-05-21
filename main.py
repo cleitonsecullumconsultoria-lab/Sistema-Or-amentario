@@ -1,4 +1,3 @@
-"""ROV — Sistema Orçamentário (FastAPI)."""
 from __future__ import annotations
 
 import sys
@@ -35,21 +34,26 @@ async def dashboard(request: Request):
 
         stats = {
             "filiais_ativas": int((filiais_df["ativo"] == 1).sum()),
+            "total_filiais": len(filiais_df),
             "total_contas": len(contas_df),
             "total_ccus": len(ccus_df),
             "versoes_budget": len(versoes_df),
             "linhas_budget": len(bud_df),
             "linhas_realizado": len(real_df),
         }
+        filiais = filiais_df[filiais_df["ativo"] == 1].to_dict("records")
         versoes = versoes_df.to_dict("records")
     except Exception:
-        stats = {k: 0 for k in ["filiais_ativas", "total_contas", "total_ccus",
-                                  "versoes_budget", "linhas_budget", "linhas_realizado"]}
+        stats = {k: 0 for k in ["filiais_ativas", "total_filiais", "total_contas",
+                                  "total_ccus", "versoes_budget", "linhas_budget", "linhas_realizado"]}
+        filiais = []
         versoes = []
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "stats": stats,
+        "filiais": filiais,
         "versoes": versoes,
+        "ano_atual": 2026,
         "active_page": "dashboard",
     })
 
@@ -57,3 +61,11 @@ async def dashboard(request: Request):
 @app.get("/cadastros")
 async def cadastros_redirect():
     return RedirectResponse("/cadastros/filiais", status_code=302)
+
+
+@app.get("/alertas")
+async def alertas(request: Request):
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "stats": {}, "filiais": [], "versoes": [], "ano_atual": 2026,
+        "active_page": "alertas",
+    })

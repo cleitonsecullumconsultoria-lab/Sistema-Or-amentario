@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Pós-Venda — ROV{% endblock %}
+{% block page_title %}Receitas Pós-Venda{% endblock %}
+{% block page_bc %}/ receitas / mapa de vendas{% endblock %}
+
+{% block topbar_actions %}
+<select class="filter" onchange="window.location='/receitas/pos-venda?ano='+this.value">
+  {% for a in anos_disponiveis %}
+  <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+  {% endfor %}
+</select>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-tools" style="color:#854F0B"></i>
+    <span class="card-title">Receitas Pós-Venda · {{ ano }}</span>
+    <span class="card-sub">· budget vs realizado · R$ mil</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Filial</th><th>Grupo</th>
+        <th class="r">Rec. Bruta</th>
+        <th class="r">Rec. Líquida</th>
+        <th class="r">(-) Custos</th>
+        <th class="r">Lucro Bruto</th>
+        <th class="r">Margem %</th>
+      </tr>
+      {% for r in receitas %}
+      <tr>
+        <td class="bold">{{ r.filial_codigo }}</td>
+        <td>{{ r.grupo }}</td>
+        <td class="r">{{ r.rec_bruta_fmt }}</td>
+        <td class="r">{{ r.rec_liq_fmt }}</td>
+        <td class="r neg">{{ r.custos_fmt }}</td>
+        <td class="r {% if r.lucro >= 0 %}pos{% else %}neg{% endif %}">{{ r.lucro_fmt }}</td>
+        <td class="r {% if r.margem >= 0 %}pos{% else %}neg{% endif %}">{{ r.margem | round(1) }}%</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px">Nenhum dado de receita encontrado.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

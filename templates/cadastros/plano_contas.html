@@ -1,155 +1,141 @@
 {% extends "base.html" %}
-
 {% block title %}Plano de Contas — ROV{% endblock %}
 {% block page_title %}Plano de Contas{% endblock %}
+{% block page_bc %}/ cadastros{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" onclick="document.getElementById('dlg-nova').showModal()">
+  <i class="ti ti-plus"></i> Nova Conta
+</button>
+{% endblock %}
 
 {% block content %}
 <div class="card">
-  <div class="card-title">
-    Contas cadastradas
-    <button class="btn btn-primary" onclick="document.getElementById('dlg-nova').showModal()">+ Nova Conta</button>
-  </div>
-
   <div class="filtros">
+    <label>Categoria:</label>
     <form method="get" style="display:flex;gap:8px;align-items:center">
-      <label style="font-size:13px;font-weight:600">Categoria:</label>
-      <select name="categoria" onchange="this.form.submit()">
+      <select class="form-select" name="categoria" style="padding:5px 10px;font-size:12px" onchange="this.form.submit()">
         <option value="" {% if not categoria_filtro %}selected{% endif %}>Todas</option>
-        <option value="receita"  {% if categoria_filtro == 'receita'  %}selected{% endif %}>Receita</option>
-        <option value="custo"    {% if categoria_filtro == 'custo'    %}selected{% endif %}>Custo</option>
-        <option value="despesa"  {% if categoria_filtro == 'despesa'  %}selected{% endif %}>Despesa</option>
+        <option value="receita"  {% if categoria_filtro=='receita'  %}selected{% endif %}>Receita</option>
+        <option value="custo"    {% if categoria_filtro=='custo'    %}selected{% endif %}>Custo</option>
+        <option value="despesa"  {% if categoria_filtro=='despesa'  %}selected{% endif %}>Despesa</option>
       </select>
     </form>
+    <span style="margin-left:auto;font-size:11px;color:var(--text-3)">{{ contas|length }} registro(s)</span>
   </div>
-
-  <div class="table-wrap">
+  <div class="tbl-wrap">
     <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Código</th><th>Nome</th><th>Categoria</th><th>Tipo</th><th>Status</th><th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in contas %}
-        <tr>
-          <td>{{ c.id }}</td>
-          <td><strong>{{ c.codigo }}</strong></td>
-          <td>{{ c.nome }}</td>
-          <td>{{ c.categoria | capitalize }}</td>
-          <td>{{ c.tipo }}</td>
-          <td>
-            {% if c.ativo == 1 %}
-              <span class="badge badge-ativo">Ativo</span>
-            {% else %}
-              <span class="badge badge-inativo">Inativo</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="btn btn-secondary btn-sm" onclick="editarConta({{ c.id }})">Editar</button>
-            <form method="post" action="/cadastros/plano-contas/excluir/{{ c.id }}" style="display:inline"
-                  onsubmit="return confirm('Excluir conta {{ c.nome }}?')">
-              <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-            </form>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="7" style="text-align:center;color:var(--cinza2)">Nenhuma conta encontrada.</td></tr>
-        {% endfor %}
-      </tbody>
+      <tr>
+        <th>Código</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th class="r">Status</th><th class="r">Ações</th>
+      </tr>
+      {% for c in contas %}
+      <tr>
+        <td class="bold mono">{{ c.codigo }}</td>
+        <td class="bold">{{ c.nome }}</td>
+        <td>
+          {% if c.categoria == 'receita' %}<span class="badge b-green">Receita</span>
+          {% elif c.categoria == 'custo' %}<span class="badge b-red">Custo</span>
+          {% else %}<span class="badge b-amber">Despesa</span>{% endif %}
+        </td>
+        <td>{{ c.tipo }}</td>
+        <td class="r">
+          {% if c.ativo == 1 %}<span class="badge b-green">Ativo</span>
+          {% else %}<span class="badge b-gray">Inativo</span>{% endif %}
+        </td>
+        <td class="r" style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-sm" onclick="editarConta({{ c.id }})">
+            <i class="ti ti-pencil"></i> Editar
+          </button>
+          <form method="post" action="/cadastros/plano-contas/excluir/{{ c.id }}" style="display:inline"
+                onsubmit="return confirm('Excluir conta {{ c.nome }}?')">
+            <button type="submit" class="btn btn-sm" style="color:var(--red);border-color:var(--red)">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px">Nenhuma conta encontrada.</td></tr>
+      {% endfor %}
     </table>
   </div>
-  <div class="table-info">{{ contas|length }} registro(s)</div>
 </div>
 
-<!-- Modal Nova Conta -->
 <dialog id="dlg-nova">
-  <div class="modal-header">
-    Nova Conta
-    <button class="modal-close" onclick="document.getElementById('dlg-nova').close()">✕</button>
-  </div>
+  <div class="modal-header">Nova Conta<button class="modal-close" onclick="document.getElementById('dlg-nova').close()">✕</button></div>
   <form method="post" action="/cadastros/plano-contas/criar">
     <div class="modal-body">
-      <div class="form-row">
+      <div class="form-grid" style="padding:0">
         <div class="form-group">
-          <label>Código *</label>
-          <input type="text" name="codigo" required placeholder="ex: 3.1.01">
+          <label class="form-label">Código *</label>
+          <input class="form-input mono" type="text" name="codigo" required placeholder="311201">
         </div>
         <div class="form-group">
-          <label>Categoria *</label>
-          <select name="categoria" required>
+          <label class="form-label">Categoria *</label>
+          <select class="form-select" name="categoria" required>
             <option value="receita">Receita</option>
             <option value="custo">Custo</option>
             <option value="despesa">Despesa</option>
           </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nome *</label>
-        <input type="text" name="nome" required placeholder="Descrição da conta">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Tipo</label>
-          <input type="text" name="tipo" placeholder="ex: variavel, fixo">
+        <div class="form-group form-full">
+          <label class="form-label">Descrição *</label>
+          <input class="form-input" type="text" name="nome" required placeholder="Venda Peças Scania">
         </div>
         <div class="form-group">
-          <label>Status</label>
-          <select name="ativo">
-            <option value="1">Ativo</option>
-            <option value="0">Inativo</option>
+          <label class="form-label">Tipo</label>
+          <input class="form-input" type="text" name="tipo" placeholder="Peças, Serviço, Pessoal...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
           </select>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="document.getElementById('dlg-nova').close()">Cancelar</button>
+      <button type="button" class="btn" onclick="document.getElementById('dlg-nova').close()">Cancelar</button>
       <button type="submit" class="btn btn-primary">Salvar</button>
     </div>
   </form>
 </dialog>
 
-<!-- Modal Editar Conta -->
 <dialog id="dlg-editar">
-  <div class="modal-header">
-    Editar Conta
-    <button class="modal-close" onclick="document.getElementById('dlg-editar').close()">✕</button>
-  </div>
+  <div class="modal-header">Editar Conta<button class="modal-close" onclick="document.getElementById('dlg-editar').close()">✕</button></div>
   <form method="post" id="form-editar" action="">
     <div class="modal-body">
-      <div class="form-row">
+      <div class="form-grid" style="padding:0">
         <div class="form-group">
-          <label>Código *</label>
-          <input type="text" name="codigo" id="edit-codigo" required>
+          <label class="form-label">Código *</label>
+          <input class="form-input mono" type="text" name="codigo" id="edit-codigo" required>
         </div>
         <div class="form-group">
-          <label>Categoria *</label>
-          <select name="categoria" id="edit-categoria" required>
+          <label class="form-label">Categoria *</label>
+          <select class="form-select" name="categoria" id="edit-categoria" required>
             <option value="receita">Receita</option>
             <option value="custo">Custo</option>
             <option value="despesa">Despesa</option>
           </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nome *</label>
-        <input type="text" name="nome" id="edit-nome" required>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Tipo</label>
-          <input type="text" name="tipo" id="edit-tipo">
+        <div class="form-group form-full">
+          <label class="form-label">Descrição *</label>
+          <input class="form-input" type="text" name="nome" id="edit-nome" required>
         </div>
         <div class="form-group">
-          <label>Status</label>
-          <select name="ativo" id="edit-ativo">
-            <option value="1">Ativo</option>
-            <option value="0">Inativo</option>
+          <label class="form-label">Tipo</label>
+          <input class="form-input" type="text" name="tipo" id="edit-tipo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo" id="edit-ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
           </select>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
+      <button type="button" class="btn" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
       <button type="submit" class="btn btn-primary">Salvar</button>
     </div>
   </form>
@@ -159,7 +145,6 @@
 {% block extra_scripts %}
 <script>
 const CONTAS = {{ contas | tojson }};
-
 function editarConta(id) {
   const c = CONTAS.find(x => x.id === id);
   if (!c) return;

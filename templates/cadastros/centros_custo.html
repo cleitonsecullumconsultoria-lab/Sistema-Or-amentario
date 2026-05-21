@@ -1,91 +1,83 @@
 {% extends "base.html" %}
-
 {% block title %}Centros de Custo — ROV{% endblock %}
 {% block page_title %}Centros de Custo{% endblock %}
+{% block page_bc %}/ cadastros{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" onclick="document.getElementById('dlg-novo').showModal()">
+  <i class="ti ti-plus"></i> Novo CCU
+</button>
+{% endblock %}
 
 {% block content %}
 <div class="card">
-  <div class="card-title">
-    Centros de Custo cadastrados
-    <button class="btn btn-primary" onclick="document.getElementById('dlg-novo').showModal()">+ Novo CCU</button>
-  </div>
-
   <div class="filtros">
+    <label>Filial:</label>
     <form method="get" style="display:flex;gap:8px;align-items:center">
-      <label style="font-size:13px;font-weight:600">Filial:</label>
-      <select name="filial_id" onchange="this.form.submit()">
+      <select class="form-select" name="filial_id" style="padding:5px 10px;font-size:12px" onchange="this.form.submit()">
         <option value="" {% if not filial_filtro %}selected{% endif %}>Todas</option>
         {% for f in filiais %}
-        <option value="{{ f.id }}" {% if filial_filtro == f.id|string %}selected{% endif %}>{{ f.codigo }} — {{ f.nome }}</option>
+        <option value="{{ f.id }}" {% if filial_filtro == f.id|string %}selected{% endif %}>
+          {{ f.codigo }} · {{ f.nome }}
+        </option>
         {% endfor %}
       </select>
     </form>
+    <span style="margin-left:auto;font-size:11px;color:var(--text-3)">{{ ccus|length }} registro(s)</span>
   </div>
-
-  <div class="table-wrap">
+  <div class="tbl-wrap">
     <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Código</th><th>Nome</th><th>Filial</th><th>Tipo</th><th>Status</th><th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in ccus %}
-        <tr>
-          <td>{{ c.id }}</td>
-          <td><strong>{{ c.codigo }}</strong></td>
-          <td>{{ c.nome }}</td>
-          <td>{{ c.filial_nome }}</td>
-          <td>{{ c.tipo }}</td>
-          <td>
-            {% if c.ativo == 1 %}
-              <span class="badge badge-ativo">Ativo</span>
-            {% else %}
-              <span class="badge badge-inativo">Inativo</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="btn btn-secondary btn-sm" onclick="editarCCU({{ c.id }})">Editar</button>
-            <form method="post" action="/cadastros/centros-custo/excluir/{{ c.id }}" style="display:inline"
-                  onsubmit="return confirm('Excluir CCU {{ c.nome }}?')">
-              <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-            </form>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="7" style="text-align:center;color:var(--cinza2)">Nenhum centro de custo encontrado.</td></tr>
-        {% endfor %}
-      </tbody>
+      <tr><th>Código</th><th>Descrição</th><th>Filial</th><th>Tipo</th><th class="r">Status</th><th class="r">Ações</th></tr>
+      {% for c in ccus %}
+      <tr>
+        <td class="bold mono">{{ c.codigo }}</td>
+        <td class="bold">{{ c.nome }}</td>
+        <td>{{ c.filial_nome }}</td>
+        <td>{{ c.tipo }}</td>
+        <td class="r">
+          {% if c.ativo == 1 %}<span class="badge b-green">Ativo</span>
+          {% else %}<span class="badge b-gray">Inativo</span>{% endif %}
+        </td>
+        <td class="r" style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-sm" onclick="editarCCU({{ c.id }})">
+            <i class="ti ti-pencil"></i> Editar
+          </button>
+          <form method="post" action="/cadastros/centros-custo/excluir/{{ c.id }}" style="display:inline"
+                onsubmit="return confirm('Excluir CCU {{ c.nome }}?')">
+            <button type="submit" class="btn btn-sm" style="color:var(--red);border-color:var(--red)">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px">Nenhum CCU encontrado.</td></tr>
+      {% endfor %}
     </table>
   </div>
-  <div class="table-info">{{ ccus|length }} registro(s)</div>
 </div>
 
-<!-- Modal Novo CCU -->
 <dialog id="dlg-novo">
-  <div class="modal-header">
-    Novo Centro de Custo
-    <button class="modal-close" onclick="document.getElementById('dlg-novo').close()">✕</button>
-  </div>
+  <div class="modal-header">Novo CCU<button class="modal-close" onclick="document.getElementById('dlg-novo').close()">✕</button></div>
   <form method="post" action="/cadastros/centros-custo/criar">
     <div class="modal-body">
-      <div class="form-group">
-        <label>Filial *</label>
-        <select name="filial_id" required>
-          <option value="">— Selecione —</option>
-          {% for f in filiais %}
-          <option value="{{ f.id }}">{{ f.codigo }} — {{ f.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Código *</label>
-          <input type="text" name="codigo" required placeholder="ex: 21001">
+      <div class="form-grid" style="padding:0">
+        <div class="form-group form-full">
+          <label class="form-label">Filial *</label>
+          <select class="form-select" name="filial_id" required>
+            <option value="">— Selecione —</option>
+            {% for f in filiais %}
+            <option value="{{ f.id }}">{{ f.codigo }} · {{ f.nome }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="form-group">
-          <label>Tipo *</label>
-          <select name="tipo" required>
+          <label class="form-label">Código *</label>
+          <input class="form-input mono" type="text" name="codigo" required placeholder="21211">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo *</label>
+          <select class="form-select" name="tipo" required>
             <option value="veiculos_novos">Veículos Novos</option>
             <option value="veiculos_usados">Veículos Usados</option>
             <option value="pecas">Peças</option>
@@ -95,51 +87,46 @@
             <option value="diretoria">Diretoria</option>
           </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nome *</label>
-        <input type="text" name="nome" required placeholder="Descrição do centro de custo">
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select name="ativo">
-          <option value="1">Ativo</option>
-          <option value="0">Inativo</option>
-        </select>
+        <div class="form-group form-full">
+          <label class="form-label">Descrição *</label>
+          <input class="form-input" type="text" name="nome" required placeholder="Peças Balcão">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="document.getElementById('dlg-novo').close()">Cancelar</button>
+      <button type="button" class="btn" onclick="document.getElementById('dlg-novo').close()">Cancelar</button>
       <button type="submit" class="btn btn-primary">Salvar</button>
     </div>
   </form>
 </dialog>
 
-<!-- Modal Editar CCU -->
 <dialog id="dlg-editar">
-  <div class="modal-header">
-    Editar Centro de Custo
-    <button class="modal-close" onclick="document.getElementById('dlg-editar').close()">✕</button>
-  </div>
+  <div class="modal-header">Editar CCU<button class="modal-close" onclick="document.getElementById('dlg-editar').close()">✕</button></div>
   <form method="post" id="form-editar" action="">
     <div class="modal-body">
-      <div class="form-group">
-        <label>Filial *</label>
-        <select name="filial_id" id="edit-filial_id" required>
-          <option value="">— Selecione —</option>
-          {% for f in filiais %}
-          <option value="{{ f.id }}">{{ f.codigo }} — {{ f.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Código *</label>
-          <input type="text" name="codigo" id="edit-codigo" required>
+      <div class="form-grid" style="padding:0">
+        <div class="form-group form-full">
+          <label class="form-label">Filial *</label>
+          <select class="form-select" name="filial_id" id="edit-filial_id" required>
+            <option value="">— Selecione —</option>
+            {% for f in filiais %}
+            <option value="{{ f.id }}">{{ f.codigo }} · {{ f.nome }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="form-group">
-          <label>Tipo *</label>
-          <select name="tipo" id="edit-tipo" required>
+          <label class="form-label">Código *</label>
+          <input class="form-input mono" type="text" name="codigo" id="edit-codigo" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo *</label>
+          <select class="form-select" name="tipo" id="edit-tipo" required>
             <option value="veiculos_novos">Veículos Novos</option>
             <option value="veiculos_usados">Veículos Usados</option>
             <option value="pecas">Peças</option>
@@ -149,21 +136,20 @@
             <option value="diretoria">Diretoria</option>
           </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nome *</label>
-        <input type="text" name="nome" id="edit-nome" required>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select name="ativo" id="edit-ativo">
-          <option value="1">Ativo</option>
-          <option value="0">Inativo</option>
-        </select>
+        <div class="form-group form-full">
+          <label class="form-label">Descrição *</label>
+          <input class="form-input" type="text" name="nome" id="edit-nome" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo" id="edit-ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
+      <button type="button" class="btn" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
       <button type="submit" class="btn btn-primary">Salvar</button>
     </div>
   </form>
@@ -173,7 +159,6 @@
 {% block extra_scripts %}
 <script>
 const CCUS = {{ ccus | tojson }};
-
 function editarCCU(id) {
   const c = CCUS.find(x => x.id === id);
   if (!c) return;

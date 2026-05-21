@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Ciclo Orçamentário — ROV{% endblock %}
+{% block page_title %}Ciclo Orçamentário{% endblock %}
+{% block page_bc %}/ budget {{ ano_atual }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-calendar-event" style="color:var(--blue)"></i>
+    <span class="card-title">Etapas do ciclo {{ ano_atual }}</span>
+    <div class="card-actions">
+      <span class="badge b-amber">Em andamento</span>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Etapa</th><th>Responsável</th><th>Prazo</th><th class="r">Status</th></tr>
+      <tr>
+        <td class="bold">Abertura do ciclo</td>
+        <td>Controller</td>
+        <td class="mono">01/11/{{ ano_atual - 1 }}</td>
+        <td class="r"><span class="badge b-green">Concluído</span></td>
+      </tr>
+      <tr>
+        <td class="bold">Preenchimento pelas filiais</td>
+        <td>Gerentes de filial</td>
+        <td class="mono">15/12/{{ ano_atual - 1 }}</td>
+        <td class="r"><span class="badge b-amber">Em andamento</span></td>
+      </tr>
+      <tr>
+        <td class="bold">Revisão controller</td>
+        <td>Controller</td>
+        <td class="mono">22/12/{{ ano_atual - 1 }}</td>
+        <td class="r"><span class="badge b-gray">Aguardando</span></td>
+      </tr>
+      <tr>
+        <td class="bold">Aprovação diretoria</td>
+        <td>Diretoria</td>
+        <td class="mono">30/12/{{ ano_atual - 1 }}</td>
+        <td class="r"><span class="badge b-gray">Aguardando</span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-building" style="color:var(--text-3)"></i>
+    <span class="card-title">Status por filial</span>
+    <span class="card-sub">· budget {{ ano_atual }}</span>
+    <div class="card-actions">
+      <a href="/budget/entrada" class="btn btn-primary btn-sm"><i class="ti ti-pencil"></i> Lançar Budget</a>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Filial</th><th>Linhas lançadas</th><th class="r">Versão ativa</th><th class="r">Status</th></tr>
+      {% for f in status_filiais %}
+      <tr>
+        <td class="bold">
+          <span class="dot {% if f.linhas > 0 %}dot-green{% else %}dot-gray{% endif %}" style="margin-right:8px"></span>
+          {{ f.codigo }} · {{ f.nome }}
+        </td>
+        <td class="mono">{{ f.linhas }}</td>
+        <td class="r mono">{{ f.versao }}</td>
+        <td class="r">
+          {% if f.linhas > 0 %}<span class="badge b-green">Com dados</span>
+          {% else %}<span class="badge b-gray">Sem dados</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

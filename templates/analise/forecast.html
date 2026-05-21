@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Forecast — ROV{% endblock %}
+{% block page_title %}Forecast de Fechamento{% endblock %}
+{% block page_bc %}/ análise / projeção {{ ano }}{% endblock %}
+
+{% block topbar_actions %}
+<select class="filter" onchange="window.location='/analise/forecast?ano='+this.value" id="sel-ano">
+  {% for a in anos_disponiveis %}
+  <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+  {% endfor %}
+</select>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-row">
+  <div class="kpi kpi-accent">
+    <div class="kpi-label">Budget anual · Grupo</div>
+    <div class="kpi-value">{{ kpis.budget_fmt }}</div>
+    <div class="kpi-sub">orçado {{ ano }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Real acumulado</div>
+    <div class="kpi-value">{{ kpis.real_fmt }}</div>
+    <div class="kpi-sub">{{ kpis.meses_real }}m · jan a {{ kpis.ate_mes }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Projeção anual</div>
+    <div class="kpi-value">{{ kpis.projecao_fmt }}</div>
+    <div class="kpi-sub {% if kpis.desvio_pct >= 0 %}up{% else %}down{% endif %}">
+      {% if kpis.desvio_pct >= 0 %}+{% endif %}{{ kpis.desvio_pct | round(1) }}% vs budget
+    </div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Tendência</div>
+    <div class="kpi-value {% if kpis.desvio_pct >= 0 %}" style="color:var(--verde){% else %}" style="color:var(--red){% endif %}">
+      {% if kpis.desvio_pct >= 0 %}↑ Positiva{% else %}↓ Negativa{% endif %}
+    </div>
+    <div class="kpi-sub">baseado em {{ kpis.meses_real }} meses</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-trending-up" style="color:var(--verde)"></i>
+    <span class="card-title">Forecast de fechamento {{ ano }}</span>
+    <span class="card-sub">· projeção baseada no realizado acumulado · R$ mil</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Filial</th>
+        <th class="r">Budget anual</th>
+        <th class="r">Real acum.</th>
+        <th class="r">Média/mês real</th>
+        <th class="r">Projeção anual</th>
+        <th class="r">Desvio R$</th>
+        <th class="r">Desvio %</th>
+      </tr>
+      {% for r in por_filial %}
+      <tr>
+        <td class="bold">{{ r.filial_codigo }} · {{ r.filial_nome }}</td>
+        <td class="r">{{ r.budget_fmt }}</td>
+        <td class="r">{{ r.real_fmt }}</td>
+        <td class="r">{{ r.media_fmt }}</td>
+        <td class="r {% if r.desvio_pct >= 0 %}pos{% else %}neg{% endif %}">{{ r.projecao_fmt }}</td>
+        <td class="r {% if r.desvio_rs >= 0 %}pos{% else %}neg{% endif %}">
+          {% if r.desvio_rs >= 0 %}+{% endif %}{{ r.desvio_rs_fmt }}
+        </td>
+        <td class="r {% if r.desvio_pct >= 0 %}pos{% else %}neg{% endif %}">
+          {% if r.desvio_pct >= 0 %}+{% endif %}{{ r.desvio_pct | round(1) }}%
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px">Nenhum dado disponível.</td></tr>
+      {% endfor %}
+      {% if por_filial %}
+      <tr class="tbl-total">
+        <td>Total Grupo</td>
+        <td class="r">{{ totais.budget_fmt }}</td>
+        <td class="r">{{ totais.real_fmt }}</td>
+        <td class="r">{{ totais.media_fmt }}</td>
+        <td class="r {% if totais.desvio_pct >= 0 %}pos{% else %}neg{% endif %}">{{ totais.projecao_fmt }}</td>
+        <td class="r {% if totais.desvio_rs >= 0 %}pos{% else %}neg{% endif %}">
+          {% if totais.desvio_rs >= 0 %}+{% endif %}{{ totais.desvio_rs_fmt }}
+        </td>
+        <td class="r {% if totais.desvio_pct >= 0 %}pos{% else %}neg{% endif %}">
+          {% if totais.desvio_pct >= 0 %}+{% endif %}{{ totais.desvio_pct | round(1) }}%
+        </td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

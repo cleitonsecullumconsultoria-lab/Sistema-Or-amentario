@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Aprovação — ROV{% endblock %}
+{% block page_title %}Aprovação de Budget{% endblock %}
+{% block page_bc %}/ budget / fila de aprovação{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-checks" style="color:var(--verde)"></i>
+    <span class="card-title">Versões aguardando aprovação</span>
+    <span class="card-sub">· {{ versoes_pendentes|length }} pendente(s)</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Versão</th><th>Ano</th><th>Cenário</th><th>Linhas</th><th class="r">Status</th><th class="r">Ações</th></tr>
+      {% for v in versoes_pendentes %}
+      <tr>
+        <td class="bold mono">v{{ v.id }}</td>
+        <td class="mono">{{ v.ano }}</td>
+        <td class="bold">{{ v.cenario }}</td>
+        <td class="mono">{{ v.n_linhas }}</td>
+        <td class="r"><span class="badge b-amber">Em revisão</span></td>
+        <td class="r" style="display:flex;gap:6px;justify-content:flex-end">
+          <form method="post" action="/budget/aprovar/{{ v.id }}">
+            <button type="submit" class="btn btn-sm btn-green"><i class="ti ti-check"></i> Aprovar</button>
+          </form>
+          <form method="post" action="/budget/devolver/{{ v.id }}">
+            <button type="submit" class="btn btn-sm" style="color:var(--red);border-color:var(--red)">
+              <i class="ti ti-arrow-back-up"></i> Devolver
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:32px">
+        <i class="ti ti-circle-check" style="font-size:28px;color:var(--verde);display:block;margin-bottom:8px"></i>
+        Nenhuma versão pendente de aprovação.
+      </td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-history" style="color:var(--text-3)"></i>
+    <span class="card-title">Versões aprovadas</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Versão</th><th>Ano</th><th>Cenário</th><th>Linhas</th><th class="r">Status</th></tr>
+      {% for v in versoes_aprovadas %}
+      <tr>
+        <td class="bold mono">v{{ v.id }}</td>
+        <td class="mono">{{ v.ano }}</td>
+        <td>{{ v.cenario }}</td>
+        <td class="mono">{{ v.n_linhas }}</td>
+        <td class="r"><span class="badge b-green">Aprovado</span></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:16px">Nenhuma versão aprovada.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

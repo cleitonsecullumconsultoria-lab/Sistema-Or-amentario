@@ -1,52 +1,53 @@
 {% extends "base.html" %}
-
 {% block title %}Filiais — ROV{% endblock %}
-{% block page_title %}Cadastro de Filiais{% endblock %}
+{% block page_title %}Empresas e Filiais{% endblock %}
+{% block page_bc %}/ cadastros{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" onclick="document.getElementById('dlg-nova').showModal()">
+  <i class="ti ti-plus"></i> Nova Filial
+</button>
+{% endblock %}
 
 {% block content %}
 <div class="card">
-  <div class="card-title">
-    Filiais cadastradas
-    <button class="btn btn-primary" onclick="document.getElementById('dlg-nova').showModal()">+ Nova Filial</button>
+  <div class="card-header">
+    <i class="ti ti-building" style="color:var(--text-3)"></i>
+    <span class="card-title">Filiais cadastradas</span>
+    <span class="card-sub">· {{ filiais|length }} registro(s)</span>
   </div>
-
-  <div class="table-wrap">
+  <div class="tbl-wrap">
     <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Código</th><th>Nome</th><th>Cidade</th><th>UF</th><th>Status</th><th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for f in filiais %}
-        <tr>
-          <td>{{ f.id }}</td>
-          <td><strong>{{ f.codigo }}</strong></td>
-          <td>{{ f.nome }}</td>
-          <td>{{ f.cidade }}</td>
-          <td>{{ f.uf }}</td>
-          <td>
-            {% if f.ativo == 1 %}
-              <span class="badge badge-ativo">Ativo</span>
-            {% else %}
-              <span class="badge badge-inativo">Inativo</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="btn btn-secondary btn-sm" onclick="editarFilial({{ f.id }})">Editar</button>
-            <form method="post" action="/cadastros/filiais/excluir/{{ f.id }}" style="display:inline"
-                  onsubmit="return confirm('Excluir filial {{ f.nome }}?')">
-              <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-            </form>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="7" style="text-align:center;color:var(--cinza2)">Nenhuma filial cadastrada.</td></tr>
-        {% endfor %}
-      </tbody>
+      <tr>
+        <th>Código</th><th>Nome</th><th>Cidade</th><th>UF</th><th class="r">Status</th><th class="r">Ações</th>
+      </tr>
+      {% for f in filiais %}
+      <tr>
+        <td class="bold mono">{{ f.codigo }}</td>
+        <td class="bold">{{ f.nome }}</td>
+        <td>{{ f.cidade }}</td>
+        <td>{{ f.uf }}</td>
+        <td class="r">
+          {% if f.ativo == 1 %}<span class="badge b-green">Ativo</span>
+          {% else %}<span class="badge b-gray">Inativo</span>{% endif %}
+        </td>
+        <td class="r" style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-sm" onclick="editarFilial({{ f.id }})">
+            <i class="ti ti-pencil"></i> Editar
+          </button>
+          <form method="post" action="/cadastros/filiais/excluir/{{ f.id }}" style="display:inline"
+                onsubmit="return confirm('Excluir filial {{ f.nome }}?')">
+            <button type="submit" class="btn btn-sm" style="color:var(--red);border-color:var(--red)">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px">Nenhuma filial cadastrada.</td></tr>
+      {% endfor %}
     </table>
   </div>
-  <div class="table-info">{{ filiais|length }} registro(s)</div>
 </div>
 
 <!-- Modal Nova Filial -->
@@ -57,44 +58,42 @@
   </div>
   <form method="post" action="/cadastros/filiais/criar">
     <div class="modal-body">
-      <div class="form-row">
+      <div class="form-grid" style="padding:0">
         <div class="form-group">
-          <label>Código *</label>
-          <input type="text" name="codigo" required maxlength="10" placeholder="ex: CBA" style="text-transform:uppercase">
+          <label class="form-label">Código *</label>
+          <input class="form-input mono" type="text" name="codigo" required maxlength="10" placeholder="CBA" style="text-transform:uppercase">
         </div>
         <div class="form-group">
-          <label>Empresa</label>
-          <select name="empresa_id">
+          <label class="form-label">Empresa</label>
+          <select class="form-select" name="empresa_id">
             {% for e in empresas %}
             <option value="{{ e.id }}">{{ e.nome }}</option>
             {% endfor %}
           </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nome *</label>
-        <input type="text" name="nome" required placeholder="Nome completo da filial">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Cidade *</label>
-          <input type="text" name="cidade" required placeholder="Cuiabá">
+        <div class="form-group form-full">
+          <label class="form-label">Nome *</label>
+          <input class="form-input" type="text" name="nome" required placeholder="Rota Oeste Veículos · Cuiabá">
         </div>
         <div class="form-group">
-          <label>UF *</label>
-          <input type="text" name="uf" required maxlength="2" placeholder="MT" style="text-transform:uppercase">
+          <label class="form-label">Cidade *</label>
+          <input class="form-input" type="text" name="cidade" required placeholder="Cuiabá">
         </div>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select name="ativo">
-          <option value="1">Ativo</option>
-          <option value="0">Inativo</option>
-        </select>
+        <div class="form-group">
+          <label class="form-label">UF *</label>
+          <input class="form-input mono" type="text" name="uf" required maxlength="2" placeholder="MT" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo">
+            <option value="1">Ativo</option>
+            <option value="0">Inativo</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="document.getElementById('dlg-nova').close()">Cancelar</button>
+      <button type="button" class="btn" onclick="document.getElementById('dlg-nova').close()">Cancelar</button>
       <button type="submit" class="btn btn-primary">Salvar</button>
     </div>
   </form>
@@ -108,44 +107,42 @@
   </div>
   <form method="post" id="form-editar" action="">
     <div class="modal-body">
-      <div class="form-row">
+      <div class="form-grid" style="padding:0">
         <div class="form-group">
-          <label>Código *</label>
-          <input type="text" name="codigo" id="edit-codigo" required maxlength="10" style="text-transform:uppercase">
+          <label class="form-label">Código *</label>
+          <input class="form-input mono" type="text" name="codigo" id="edit-codigo" required style="text-transform:uppercase">
         </div>
         <div class="form-group">
-          <label>Empresa</label>
-          <select name="empresa_id" id="edit-empresa_id">
+          <label class="form-label">Empresa</label>
+          <select class="form-select" name="empresa_id" id="edit-empresa_id">
             {% for e in empresas %}
             <option value="{{ e.id }}">{{ e.nome }}</option>
             {% endfor %}
           </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nome *</label>
-        <input type="text" name="nome" id="edit-nome" required>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Cidade *</label>
-          <input type="text" name="cidade" id="edit-cidade" required>
+        <div class="form-group form-full">
+          <label class="form-label">Nome *</label>
+          <input class="form-input" type="text" name="nome" id="edit-nome" required>
         </div>
         <div class="form-group">
-          <label>UF *</label>
-          <input type="text" name="uf" id="edit-uf" required maxlength="2" style="text-transform:uppercase">
+          <label class="form-label">Cidade *</label>
+          <input class="form-input" type="text" name="cidade" id="edit-cidade" required>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select name="ativo" id="edit-ativo">
-          <option value="1">Ativo</option>
-          <option value="0">Inativo</option>
-        </select>
+        <div class="form-group">
+          <label class="form-label">UF *</label>
+          <input class="form-input mono" type="text" name="uf" id="edit-uf" required maxlength="2" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo" id="edit-ativo">
+            <option value="1">Ativo</option>
+            <option value="0">Inativo</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
+      <button type="button" class="btn" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
       <button type="submit" class="btn btn-primary">Salvar</button>
     </div>
   </form>
@@ -155,7 +152,6 @@
 {% block extra_scripts %}
 <script>
 const FILIAIS = {{ filiais | tojson }};
-
 function editarFilial(id) {
   const f = FILIAIS.find(x => x.id === id);
   if (!f) return;

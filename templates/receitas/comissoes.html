@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Comissões — ROV{% endblock %}
+{% block page_title %}Comissões{% endblock %}
+{% block page_bc %}/ receitas / comissões{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-currency-dollar" style="color:#854F0B"></i>
+    <span class="card-title">Comissões orçadas {{ ano }}</span>
+    <span class="card-sub">· PMV, PMS, Top Dealers · R$ mil</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Filial</th><th>Tipo</th><th>Conta</th>
+        {% for m in meses %}<th class="r">{{ m.nome }}</th>{% endfor %}
+        <th class="r">Total</th>
+      </tr>
+      {% for r in comissoes %}
+      <tr>
+        <td class="bold">{{ r.filial_codigo }}</td>
+        <td>{{ r.tipo }}</td>
+        <td class="mono" style="color:var(--text-3)">{{ r.conta_codigo }}</td>
+        {% for m in meses %}
+        <td class="r">{{ r.valores.get(m.num, '—') }}</td>
+        {% endfor %}
+        <td class="r bold">{{ r.total_fmt }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="{{ meses|length + 4 }}" style="text-align:center;color:var(--text-3);padding:24px">Nenhum dado de comissão encontrado.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

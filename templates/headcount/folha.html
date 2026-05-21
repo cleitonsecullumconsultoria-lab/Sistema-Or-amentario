@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Folha Orçada — ROV{% endblock %}
+{% block page_title %}Folha Orçada{% endblock %}
+{% block page_bc %}/ headcount / {{ ano }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-report-money" style="color:#534AB7"></i>
+    <span class="card-title">Folha orçada {{ ano }}</span>
+    <span class="card-sub">· calculada automaticamente do headcount · R$ mil</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Filial</th>
+        <th class="r">Colaboradores</th>
+        <th class="r">Salários</th>
+        <th class="r">Encargos (50%)</th>
+        <th class="r">Benefícios</th>
+        <th class="r">Total/mês</th>
+        <th class="r">Total anual</th>
+      </tr>
+      {% for r in por_filial %}
+      <tr>
+        <td class="bold">{{ r.filial_codigo }} · {{ r.filial_nome }}</td>
+        <td class="r mono">{{ r.n_colab }}</td>
+        <td class="r">{{ r.salarios_fmt }}</td>
+        <td class="r">{{ r.encargos_fmt }}</td>
+        <td class="r">{{ r.beneficios_fmt }}</td>
+        <td class="r bold">{{ r.total_mes_fmt }}</td>
+        <td class="r bold">{{ r.total_ano_fmt }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px">Nenhum colaborador cadastrado.</td></tr>
+      {% endfor %}
+      {% if por_filial %}
+      <tr class="tbl-total">
+        <td>Total Grupo</td>
+        <td class="r mono">{{ totais.n_colab }}</td>
+        <td class="r">{{ totais.salarios_fmt }}</td>
+        <td class="r">{{ totais.encargos_fmt }}</td>
+        <td class="r">{{ totais.beneficios_fmt }}</td>
+        <td class="r">{{ totais.total_mes_fmt }}</td>
+        <td class="r">{{ totais.total_ano_fmt }}</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}
