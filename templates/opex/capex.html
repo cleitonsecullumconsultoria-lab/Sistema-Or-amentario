@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}CAPEX — ROV{% endblock %}
+{% block page_title %}CAPEX{% endblock %}
+{% block page_bc %}/ opex / investimentos{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-truck" style="color:#854F0B"></i>
+    <span class="card-title">CAPEX {{ ano }}</span>
+    <span class="card-sub">· investimentos orçados</span>
+    <div class="card-actions">
+      <button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo CAPEX</button>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Descrição</th><th>Filial</th>
+        <th class="r">Valor</th><th>Mês previsto</th>
+        <th>Depreciação</th><th class="r">Status</th>
+      </tr>
+      <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:32px">
+        Nenhum CAPEX cadastrado para {{ ano }}.
+      </td></tr>
+    </table>
+  </div>
+</div>
+{% endblock %}

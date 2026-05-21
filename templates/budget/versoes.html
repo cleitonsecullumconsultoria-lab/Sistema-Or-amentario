@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Versões de Budget — ROV{% endblock %}
+{% block page_title %}Versões de Budget{% endblock %}
+{% block page_bc %}/ budget / histórico{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-history" style="color:var(--text-3)"></i>
+    <span class="card-title">Histórico de versões</span>
+    <span class="card-sub">· {{ versoes|length }} versão(ões)</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>ID</th><th>Ano</th><th>Cenário</th><th>Criado por</th><th>Data</th><th class="r">Status</th><th class="r">Ações</th></tr>
+      {% for v in versoes %}
+      <tr>
+        <td class="mono bold">v{{ v.id }}</td>
+        <td class="mono">{{ v.ano }}</td>
+        <td class="bold">{{ v.cenario }}</td>
+        <td>{{ v.criado_por | default('—') }}</td>
+        <td style="color:var(--text-3)">{{ v.criado_em | default('—') }}</td>
+        <td class="r">
+          {% if v.status == 'aprovado' %}<span class="badge b-green">Aprovado</span>
+          {% elif v.status == 'em_revisao' %}<span class="badge b-amber">Em revisão</span>
+          {% elif v.status == 'rascunho' %}<span class="badge b-gray">Rascunho</span>
+          {% else %}<span class="badge b-gray">{{ v.status }}</span>{% endif %}
+        </td>
+        <td class="r">
+          <a href="/budget/entrada?versao_id={{ v.id }}" class="btn btn-sm">
+            <i class="ti ti-pencil"></i> Editar
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px">Nenhuma versão encontrada.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

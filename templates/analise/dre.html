@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}DRE Gerencial — ROV{% endblock %}
+{% block page_title %}DRE Gerencial{% endblock %}
+{% block page_bc %}/ análise / {{ filial_nome }} / {{ mes_nome }}/{{ ano }}{% endblock %}
+
+{% block topbar_actions %}
+<select class="filter" onchange="irFiltro()" id="sel-filial">
+  <option value="">Grupo consolidado</option>
+  {% for f in filiais %}
+  <option value="{{ f.id }}" {% if f.id == filial_id %}selected{% endif %}>
+    {{ f.codigo }} · {{ f.nome }}
+  </option>
+  {% endfor %}
+</select>
+<select class="filter" onchange="irFiltro()" id="sel-ano">
+  {% for a in anos_disponiveis %}
+  <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+  {% endfor %}
+</select>
+<select class="filter" onchange="irFiltro()" id="sel-mes">
+  {% for m in range(1, 13) %}
+  {% set nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'] %}
+  <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ nomes[m-1] }}/{{ ano }}</option>
+  {% endfor %}
+</select>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-row">
+  <div class="kpi kpi-accent">
+    <div class="kpi-label">Receita Bruta</div>
+    <div class="kpi-value">{{ dre.receita_bruta_fmt }}</div>
+    <div class="kpi-sub {% if dre.var_rec >= 0 %}up{% else %}down{% endif %}">
+      {% if dre.var_rec is not none %}
+        {% if dre.var_rec >= 0 %}+{% endif %}{{ dre.var_rec | round(1) }}% vs budget
+      {% endif %}
+    </div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Lucro Bruto</div>
+    <div class="kpi-value">{{ dre.lucro_bruto_fmt }}</div>
+    <div class="kpi-sub">Margem: {{ dre.margem_bruta_fmt }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">EBITDA</div>
+    <div class="kpi-value">{{ dre.ebitda_fmt }}</div>
+    <div class="kpi-sub">Margem: {{ dre.margem_ebitda_fmt }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Resultado</div>
+    <div class="kpi-value {% if dre.resultado >= 0 %}" style="color:var(--verde){% else %}" style="color:var(--red){% endif %}">
+      {{ dre.resultado_fmt }}
+    </div>
+    <div class="kpi-sub">EBIT · {{ mes_nome }}/{{ ano }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-file-analytics" style="color:var(--blue)"></i>
+    <span class="card-title">DRE · {{ filial_nome }} · {{ mes_nome }}/{{ ano }}</span>
+    <span class="card-sub">· R$ mil</span>
+  </div>
+
+  <div class="dre-row dre-header">
+    <span class="dre-label">Linha DRE</span>
+    <span class="dre-val">Realizado</span>
+    <span class="dre-val">Budget</span>
+    <span class="dre-var">Var %</span>
+  </div>
+
+  {% macro dre_linha(label, real, bud, var_pct, classe='', indent='') %}
+  <div class="dre-row {{ classe }} {{ indent }}">
+    <span class="dre-label">{{ label }}</span>
+    <span class="dre-val">{{ real }}</span>
+    <span class="dre-val">{{ bud }}</span>
+    <span class="dre-var {% if var_pct is not none %}{% if var_pct >= 0 %}pos{% else %}neg{% endif %}{% endif %}">
+      {% if var_pct is not none %}{% if var_pct >= 0 %}+{% endif %}{{ var_pct | round(1) }}%{% else %}—{% endif %}
+    </span>
+  </div>
+  {% endmacro %}
+
+  {% for linha in dre.linhas %}
+  <div class="dre-row {{ linha.classe }} {{ linha.indent }}">
+    <span class="dre-label">{{ linha.label }}</span>
+    <span class="dre-val">{{ linha.real_fmt }}</span>
+    <span class="dre-val">{{ linha.bud_fmt }}</span>
+    <span class="dre-var {% if linha.var_pct is not none %}{% if linha.var_pct >= 0 %}pos{% else %}neg{% endif %}{% endif %}">
+      {% if linha.var_pct is not none %}{% if linha.var_pct >= 0 %}+{% endif %}{{ linha.var_pct | round(1) }}%{% else %}—{% endif %}
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function irFiltro() {
+  const filial = document.getElementById('sel-filial').value;
+  const ano = document.getElementById('sel-ano').value;
+  const mes = document.getElementById('sel-mes').value;
+  let url = '/analise/dre?ano=' + ano + '&mes=' + mes;
+  if (filial) url += '&filial_id=' + filial;
+  window.location = url;
+}
+</script>
+{% endblock %}

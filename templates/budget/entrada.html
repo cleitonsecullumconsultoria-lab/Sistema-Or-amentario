@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Entrada de Budget — ROV{% endblock %}
+{% block page_title %}Entrada de Budget{% endblock %}
+{% block page_bc %}/ budget {{ versao.ano }} / {{ filial_sel.codigo if filial_sel else 'grupo' }}{% endblock %}
+
+{% block topbar_actions %}
+<select class="filter" onchange="window.location='/budget/entrada?versao_id='+this.value+'&filial_id={{ filial_sel.id if filial_sel else '' }}'">
+  {% for v in versoes %}
+  <option value="{{ v.id }}" {% if v.id == versao.id %}selected{% endif %}>
+    v{{ v.id }} · {{ v.ano }} {{ v.cenario }}
+  </option>
+  {% endfor %}
+</select>
+<select class="filter" onchange="window.location='/budget/entrada?versao_id={{ versao.id }}&filial_id='+this.value">
+  <option value="">Todas as filiais</option>
+  {% for f in filiais %}
+  <option value="{{ f.id }}" {% if filial_sel and f.id == filial_sel.id %}selected{% endif %}>
+    {{ f.codigo }} · {{ f.nome }}
+  </option>
+  {% endfor %}
+</select>
+{% endblock %}
+
+{% block content %}
+{% if versao.status == 'aprovado' %}
+<div class="alert-bar">
+  <i class="ti ti-lock"></i>
+  <strong>Budget aprovado</strong> — esta versão está bloqueada para edição.
+  Apenas o controller pode reabrir.
+</div>
+{% else %}
+<div class="alert-bar">
+  <i class="ti ti-info-circle"></i>
+  Versão <strong>v{{ versao.id }} · {{ versao.cenario }} {{ versao.ano }}</strong>
+  em edição. Salve regularmente.
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-pencil" style="color:var(--blue)"></i>
+    <span class="card-title">
+      Budget {{ versao.ano }}
+      {% if filial_sel %}· {{ filial_sel.codigo }} {{ filial_sel.nome }}{% else %}· Todas as filiais{% endif %}
+    </span>
+    <span class="card-sub">· v{{ versao.id }} {{ versao.cenario }}</span>
+    <div class="card-actions">
+      <span class="badge {% if versao.status == 'aprovado' %}b-green{% elif versao.status == 'em_revisao' %}b-amber{% else %}b-gray{% endif %}">
+        {{ versao.status | capitalize }}
+      </span>
+    </div>
+  </div>
+
+  <form method="post" action="/budget/entrada/salvar">
+    <input type="hidden" name="versao_id" value="{{ versao.id }}">
+    {% if filial_sel %}<input type="hidden" name="filial_id" value="{{ filial_sel.id }}">{% endif %}
+
+    <div class="budget-grid">
+      <table>
+        <thead>
+          <tr>
+            <th style="min-width:200px;position:sticky;left:0;z-index:2;background:var(--bg)">Conta / Filial</th>
+            {% for m in meses %}
+            <th class="r">{{ m.nome }}</th>
+            {% endfor %}
+            <th class="r" style="min-width:100px">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for grupo in grid %}
+          <!-- Separador de filial -->
+          {% if not filial_sel %}
+          <tr class="tbl-section">
+            <td colspan="{{ meses|length + 2 }}">▸ {{ grupo.filial_codigo }} · {{ grupo.filial_nome }}</td>
+          </tr>
+          {% endif %}
+
+          <!-- Referência realizado ano anterior (somente leitura) -->
+          {% if grupo.ref_rows %}
+          <tr class="tbl-ref">
+            <td colspan="{{ meses|length + 2 }}" style="font-size:10px;padding:5px 14px;color:var(--text-3)">
+              ▸ Referência: Real {{ versao.ano - 1 }} (R$ mil) — somente leitura
+            </td>
+          </tr>
+          {% for ref in grupo.ref_rows %}
+          <tr class="tbl-ref">
+            <td>{{ ref.conta_codigo }} {{ ref.conta_nome }}</td>
+            {% for m in meses %}
+            <td class="r">{{ ref.valores.get(m.num, '') }}</td>
+            {% endfor %}
+            <td class="r">{{ ref.total }}</td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+
+          <!-- Linhas de budget editáveis -->
+          {% for row in grupo.bud_rows %}
+          <tr>
+            <td class="bold" style="position:sticky;left:0;background:var(--surface);z-index:1">
+              {{ row.conta_codigo }} {{ row.conta_nome }}
+            </td>
+            {% for m in meses %}
+            <td class="r">
+              {% if versao.status == 'aprovado' %}
+                <input type="text" class="readonly mono"
+                       value="{{ row.valores.get(m.num, '') }}" readonly>
+              {% else %}
+                <input type="text" class="mono"
+                       name="v_{{ grupo.filial_id }}_{{ row.conta_id }}_{{ m.num }}"
+                       value="{{ row.valores.get(m.num, '') }}"
+                       oninput="calcRow(this)">
+              {% endif %}
+            </td>
+            {% endfor %}
+            <td class="r">
+              <input type="text" class="calc" id="tot_{{ grupo.filial_id }}_{{ row.conta_id }}"
+                     value="{{ row.total }}" readonly>
+            </td>
+          </tr>
+          {% endfor %}
+
+          <!-- Subtotal do grupo -->
+          {% if grupo.subtotal %}
+          <tr class="tbl-total">
+            <td>Subtotal {{ grupo.filial_codigo if not filial_sel else '' }}</td>
+            {% for m in meses %}
+            <td class="r mono">{{ grupo.subtotal.get(m.num, '') }}</td>
+            {% endfor %}
+            <td class="r mono">{{ grupo.subtotal_total }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if versao.status != 'aprovado' %}
+    <div class="form-footer">
+      <button type="submit" name="acao" value="rascunho" class="btn">
+        <i class="ti ti-device-floppy"></i> Salvar rascunho
+      </button>
+      <button type="submit" name="acao" value="enviar" class="btn btn-green">
+        <i class="ti ti-send"></i> Enviar para aprovação
+      </button>
+      <span class="form-hint">Versão v{{ versao.id }} · {{ versao.cenario }} {{ versao.ano }}</span>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function calcRow(input) {
+  const name = input.name; // v_filialId_contaId_mes
+  const parts = name.split('_');
+  const filialId = parts[1];
+  const contaId = parts[2];
+  const totId = 'tot_' + filialId + '_' + contaId;
+  const row = input.closest('tr');
+  let sum = 0;
+  row.querySelectorAll('input.mono:not(.readonly)').forEach(inp => {
+    const v = parseFloat(inp.value.replace(',', '.')) || 0;
+    sum += v;
+  });
+  const totEl = document.getElementById(totId);
+  if (totEl) totEl.value = sum.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+</script>
+{% endblock %}

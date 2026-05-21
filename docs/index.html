@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROV — Sistema Orçamentário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --azul: #1D3557;
+  --verde: #1D9E75;
+  --verde-claro: #E1F5EE;
+  --verde-escuro: #0F6E56;
+  --bg: #F4F6F9;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text: #1A2332;
+  --text-2: #4A5568;
+  --text-3: #94A3B8;
+  --red: #E24B4A;
+  --red-bg: #FEF2F2;
+  --amber: #EF9F27;
+  --amber-bg: #FFFBEB;
+  --blue: #185FA5;
+  --blue-bg: #EFF6FF;
+  --sidebar-w: 228px;
+  --topbar-h: 56px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
+
+/* ── LAYOUT ── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: var(--sidebar-w); background: var(--azul); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0; }
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* ── SIDEBAR ── */
+.sidebar-logo { padding: 18px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.logo-mark { width: 34px; height: 34px; background: var(--verde); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; color: #fff; letter-spacing: .05em; flex-shrink: 0; }
+.logo-text { color: #fff; font-size: 13px; font-weight: 500; line-height: 1.3; }
+.logo-sub { color: rgba(255,255,255,.4); font-size: 10px; font-family: 'IBM Plex Mono', monospace; }
+
+.nav-group { padding: 16px 10px 4px; }
+.nav-group-label { font-size: 9px; font-weight: 600; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: .12em; padding: 0 8px; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 7px; cursor: pointer; margin-bottom: 1px; transition: all .15s; color: rgba(255,255,255,.6); font-size: 12.5px; }
+.nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+.nav-item.active { background: rgba(255,255,255,.12); color: #fff; }
+.nav-item.active i { color: var(--verde); }
+.nav-item i { font-size: 15px; color: rgba(255,255,255,.4); flex-shrink: 0; transition: color .15s; }
+.nav-item .nav-badge { margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
+.nav-item.active .nav-badge { background: var(--verde); color: #fff; }
+
+.sidebar-footer { margin-top: auto; padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+.user-card { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px; }
+.user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--verde); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+.user-name { font-size: 12px; color: rgba(255,255,255,.85); font-weight: 500; }
+.user-role { font-size: 10px; color: rgba(255,255,255,.35); font-family: 'IBM Plex Mono', monospace; }
+
+/* ── TOPBAR ── */
+.page-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.page-breadcrumb { font-size: 11px; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; margin-left: 4px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+select.filter { font-size: 12px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; }
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; transition: all .15s; }
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--azul); border-color: var(--azul); color: #fff; }
+.btn-primary:hover { background: #16293f; }
+.btn-green { background: var(--verde); border-color: var(--verde); color: #fff; }
+.btn-green:hover { background: var(--verde-escuro); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.kpi-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.kpi-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+.kpi-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+.kpi-sub.up { color: var(--verde); }
+.kpi-sub.down { color: var(--red); }
+.kpi-accent { border-left: 3px solid var(--verde); }
+
+/* ── CARDS ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; background: var(--surface); }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.card-sub { font-size: 11px; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; }
+.card-actions { margin-left: auto; display: flex; gap: 8px; }
+
+/* ── TABELAS ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 9px 14px; background: var(--bg); color: var(--text-3); font-weight: 600; font-size: 10.5px; text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+th.r { text-align: right; }
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 12.5px; white-space: nowrap; }
+td.r { text-align: right; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+td.bold { font-weight: 600; color: var(--text); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFBFC; }
+.tbl-total td { background: var(--bg) !important; font-weight: 600; color: var(--text); }
+.tbl-ref td { background: #FAFBFC; color: var(--text-3) !important; font-size: 11.5px; }
+.tbl-section td { background: var(--bg); font-weight: 600; color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 14px; }
+
+/* ── BADGES ── */
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 5px; }
+.b-green { background: var(--verde-claro); color: var(--verde-escuro); }
+.b-amber { background: var(--amber-bg); color: #92400E; }
+.b-red { background: var(--red-bg); color: #991B1B; }
+.b-blue { background: var(--blue-bg); color: var(--blue); }
+.b-gray { background: var(--bg); color: var(--text-3); border: 1px solid var(--border); }
+
+/* ── PROGRESS ── */
+.prog { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; width: 80px; }
+.prog-fill { height: 100%; border-radius: 3px; background: var(--verde); transition: width .3s; }
+
+/* ── FORM ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 18px; }
+.form-full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; }
+.form-input, .form-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; color: var(--text); background: var(--surface); font-family: 'IBM Plex Sans', sans-serif; transition: border-color .15s; }
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--verde); box-shadow: 0 0 0 3px rgba(29,158,117,.1); }
+.form-input.mono { font-family: 'IBM Plex Mono', monospace; }
+.form-footer { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+.form-hint { font-size: 11px; color: var(--text-3); margin-left: auto; }
+
+/* ── TABS ── */
+.tab-bar { display: flex; gap: 2px; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.tab { padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text-3); transition: all .15s; border: 1px solid transparent; }
+.tab:hover { color: var(--text); background: var(--bg); }
+.tab.active { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+/* ── GRID BUDGET ── */
+.budget-grid { overflow-x: auto; }
+.budget-grid table th, .budget-grid table td { padding: 7px 10px; font-size: 11.5px; }
+.budget-grid input[type=text] { width: 70px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-align: right; color: var(--text); background: var(--surface); }
+.budget-grid input[type=text]:focus { outline: none; border-color: var(--verde); background: #FAFFFE; }
+.budget-grid .readonly { background: transparent; border-color: transparent; color: var(--text-3); pointer-events: none; }
+.budget-grid .calc { background: var(--bg); border-color: transparent; color: var(--text); font-weight: 600; pointer-events: none; }
+
+/* ── DRE ── */
+.dre-row { display: flex; align-items: center; padding: 8px 18px; border-bottom: 1px solid var(--border); }
+.dre-row:last-child { border-bottom: none; }
+.dre-row.header { background: var(--bg); font-weight: 600; color: var(--text-3); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 18px; }
+.dre-row.total { background: var(--azul); color: #fff; font-weight: 600; }
+.dre-row.total .dre-val { color: #fff; }
+.dre-row.ebitda { background: var(--verde-claro); }
+.dre-row.ebitda .dre-val { color: var(--verde-escuro); font-weight: 700; }
+.dre-row.indent { padding-left: 36px; }
+.dre-row.indent2 { padding-left: 52px; }
+.dre-label { flex: 1; color: var(--text-2); font-size: 12.5px; }
+.dre-row.total .dre-label { color: #fff; }
+.dre-row.ebitda .dre-label { color: var(--verde-escuro); font-weight: 600; }
+.dre-val { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text); min-width: 100px; text-align: right; }
+.dre-var { font-family: 'IBM Plex Mono', monospace; font-size: 11px; min-width: 80px; text-align: right; padding-left: 12px; }
+.pos { color: var(--verde) !important; }
+.neg { color: var(--red) !important; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── ALERT BAR ── */
+.alert-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--amber-bg); border: 1px solid #FDE68A; border-radius: 8px; margin-bottom: 16px; font-size: 12px; color: #92400E; }
+
+/* ── STATUS DOT ── */
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot-green { background: var(--verde); }
+.dot-amber { background: var(--amber); }
+.dot-red { background: var(--red); }
+.dot-gray { background: var(--border-strong); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">ROV</div>
+    <div>
+      <div class="logo-text">Rota Oeste</div>
+      <div class="logo-sub">sis. orçamentário</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Visão Geral</div>
+    <div class="nav-item active" onclick="nav(this,'dashboard')"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+    <div class="nav-item" onclick="nav(this,'alertas')"><i class="ti ti-bell"></i>Alertas<span class="nav-badge">3</span></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Cadastros</div>
+    <div class="nav-item" onclick="nav(this,'empresas')"><i class="ti ti-building"></i>Empresas e Filiais</div>
+    <div class="nav-item" onclick="nav(this,'plano')"><i class="ti ti-list-numbers"></i>Plano de Contas</div>
+    <div class="nav-item" onclick="nav(this,'ccu')"><i class="ti ti-sitemap"></i>Centros de Custo</div>
+    <div class="nav-item" onclick="nav(this,'usuarios')"><i class="ti ti-users"></i>Usuários</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Budget</div>
+    <div class="nav-item" onclick="nav(this,'ciclo')"><i class="ti ti-calendar-event"></i>Ciclo Orçamentário</div>
+    <div class="nav-item" onclick="nav(this,'entrada')"><i class="ti ti-pencil"></i>Entrada de Budget<span class="nav-badge">!</span></div>
+    <div class="nav-item" onclick="nav(this,'aprovacao')"><i class="ti ti-checks"></i>Aprovação</div>
+    <div class="nav-item" onclick="nav(this,'versoes')"><i class="ti ti-history"></i>Versões</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Receitas</div>
+    <div class="nav-item" onclick="nav(this,'posVenda')"><i class="ti ti-tools"></i>Pós-venda</div>
+    <div class="nav-item" onclick="nav(this,'comissoes')"><i class="ti ti-currency-dollar"></i>Comissões</div>
+    <div class="nav-item" onclick="nav(this,'conectividade')"><i class="ti ti-wifi"></i>Conectividade</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Headcount</div>
+    <div class="nav-item" onclick="nav(this,'colaboradores')"><i class="ti ti-id-badge"></i>Colaboradores</div>
+    <div class="nav-item" onclick="nav(this,'folha')"><i class="ti ti-report-money"></i>Folha Orçada</div>
+    <div class="nav-item" onclick="nav(this,'cargos')"><i class="ti ti-hierarchy"></i>Cargos e Funções</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">OPEX</div>
+    <div class="nav-item" onclick="nav(this,'opex')"><i class="ti ti-receipt"></i>Despesas Oper.</div>
+    <div class="nav-item" onclick="nav(this,'capex')"><i class="ti ti-truck"></i>CAPEX</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Análise</div>
+    <div class="nav-item" onclick="nav(this,'bvsr')"><i class="ti ti-chart-bar"></i>Budget vs Real</div>
+    <div class="nav-item" onclick="nav(this,'dre')"><i class="ti ti-file-analytics"></i>DRE Gerencial</div>
+    <div class="nav-item" onclick="nav(this,'forecast')"><i class="ti ti-trending-up"></i>Forecast</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">CT</div>
+      <div>
+        <div class="user-name">Cleiton Trajano</div>
+        <div class="user-role">controller · grupo rov</div>
+      </div>
+      <i class="ti ti-settings" style="font-size:14px;color:rgba(255,255,255,.25);margin-left:auto"></i>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <span class="page-title" id="page-title">Dashboard</span>
+      <span class="page-breadcrumb" id="page-bc">/ grupo rov / budget 2026</span>
+    </div>
+    <div class="topbar-right">
+      <select class="filter" onchange="filterAno(this.value)">
+        <option>2026</option><option>2025</option><option>2024</option>
+      </select>
+      <select class="filter" id="filter-filial">
+        <option value="">Todas as filiais</option>
+        <option>CBA · Cuiabá</option><option>ROO · Rondonópolis</option>
+        <option>SNP · Sinop</option><option>SPZ · Sapezal</option>
+        <option>AGB · Água Boa</option><option>REF · Reformadora</option>
+        <option>MTP · Matuá</option><option>CWS · Lucas RV</option>
+      </select>
+      <button class="btn btn-primary btn-sm"><i class="ti ti-download" style="font-size:13px"></i> Exportar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ─── DASHBOARD ─── -->
+    <div class="screen active" id="s-dashboard">
+      <div class="kpi-row">
+        <div class="kpi kpi-accent">
+          <div class="kpi-label">Receita orçada 2026</div>
+          <div class="kpi-value">R$ 229M</div>
+          <div class="kpi-sub">8 filiais consolidadas</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Filiais com budget enviado</div>
+          <div class="kpi-value">4 / 8</div>
+          <div class="kpi-sub up">CBA, ROO, AGB, REF ✓</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Headcount orçado</div>
+          <div class="kpi-value">247</div>
+          <div class="kpi-sub">colaboradores no grupo</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Prazo do ciclo</div>
+          <div class="kpi-value" style="font-size:16px;margin-top:2px">15/12/2025</div>
+          <div class="kpi-sub down">4 filiais pendentes</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-building" style="color:var(--text-3)"></i>
+          <span class="card-title">Status do ciclo orçamentário por filial</span>
+          <span class="card-sub">· budget 2026</span>
+          <div class="card-actions">
+            <button class="btn btn-sm btn-primary"><i class="ti ti-bell"></i> Cobrar pendentes</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Filial</th><th>Peças</th><th>Serviços</th><th>Comissões</th><th>Headcount</th><th>OPEX</th><th class="r">Status</th><th class="r">Progresso</th></tr>
+            <tr><td class="bold"><span class="dot dot-green" style="margin-right:6px"></span>CBA · Cuiabá</td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td class="r"><span class="badge b-green">Enviado</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:100%"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-amber" style="margin-right:6px"></span>ROO · Rondonópolis</td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-amber">Pend.</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td class="r"><span class="badge b-amber">Em edição</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:80%"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-red" style="margin-right:6px"></span>SNP · Sinop</td><td><span class="badge b-green">OK</span></td><td><span class="badge b-red">Falta</span></td><td><span class="badge b-red">Falta</span></td><td><span class="badge b-red">Falta</span></td><td><span class="badge b-red">Falta</span></td><td class="r"><span class="badge b-red">Incompleto</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:20%;background:var(--red)"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-green" style="margin-right:6px"></span>AGB · Água Boa</td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td class="r"><span class="badge b-green">Enviado</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:100%"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-amber" style="margin-right:6px"></span>SPZ · Sapezal</td><td><span class="badge b-amber">Pend.</span></td><td><span class="badge b-amber">Pend.</span></td><td><span class="badge b-red">Falta</span></td><td><span class="badge b-amber">Pend.</span></td><td><span class="badge b-red">Falta</span></td><td class="r"><span class="badge b-amber">Em edição</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:40%;background:var(--amber)"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-green" style="margin-right:6px"></span>REF · Reformadora</td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td><span class="badge b-green">OK</span></td><td class="r"><span class="badge b-green">Enviado</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:100%"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-gray" style="margin-right:6px"></span>MTP · Matuá</td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td class="r"><span class="badge b-gray">Não iniciado</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:0%"></div></div></td></tr>
+            <tr><td class="bold"><span class="dot dot-gray" style="margin-right:6px"></span>CWS · Lucas RV</td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td><span class="badge b-gray">—</span></td><td class="r"><span class="badge b-gray">Não iniciado</span></td><td class="r"><div class="prog"><div class="prog-fill" style="width:0%"></div></div></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ENTRADA DE BUDGET ─── -->
+    <div class="screen" id="s-entrada">
+      <div class="alert-bar"><i class="ti ti-info-circle"></i> Prazo para envio: <strong>15/12/2025</strong> · Salve o rascunho regularmente. Após envio para aprovação, o budget fica bloqueado para edição.</div>
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-pencil" style="color:var(--blue)"></i>
+          <span class="card-title">Entrada de Budget · CBA Cuiabá · 2026</span>
+          <span class="card-sub">· 311-xxx Receitas Pós-venda</span>
+          <div class="card-actions"><span class="badge b-amber">Em edição</span></div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active">Peças</div>
+          <div class="tab">Serviços</div>
+          <div class="tab">Comissões</div>
+          <div class="tab">Headcount</div>
+          <div class="tab">OPEX</div>
+        </div>
+        <div class="budget-grid">
+          <table>
+            <tr>
+              <th style="min-width:180px">Conta / CCU</th>
+              <th class="r">Jan</th><th class="r">Fev</th><th class="r">Mar</th><th class="r">Abr</th><th class="r">Mai</th><th class="r">Jun</th>
+              <th class="r">Jul</th><th class="r">Ago</th><th class="r">Set</th><th class="r">Out</th><th class="r">Nov</th><th class="r">Dez</th>
+              <th class="r" style="min-width:90px">Total</th>
+            </tr>
+            <!-- Referência 2024 -->
+            <tr class="tbl-ref">
+              <td colspan="14" style="font-size:10px;padding:5px 14px;color:var(--text-3)">▸ Referência: Real 2024 (R$ mil) — somente leitura</td>
+            </tr>
+            <tr class="tbl-ref"><td>311201 Scania · Balcão</td><td class="r">1.547</td><td class="r">1.792</td><td class="r">1.426</td><td class="r">1.680</td><td class="r">1.710</td><td class="r">1.540</td><td class="r">1.620</td><td class="r">1.590</td><td class="r">1.480</td><td class="r">1.510</td><td class="r">1.420</td><td class="r">1.380</td><td class="r">18.695</td></tr>
+            <tr class="tbl-ref"><td>311201 Scania · Oficina</td><td class="r">820</td><td class="r">980</td><td class="r">910</td><td class="r">870</td><td class="r">950</td><td class="r">890</td><td class="r">910</td><td class="r">880</td><td class="r">820</td><td class="r">840</td><td class="r">800</td><td class="r">780</td><td class="r">10.450</td></tr>
+            <!-- Budget 2026 -->
+            <tr class="tbl-section"><td colspan="14">▸ Budget 2026 · Balcão (CCU 21211)</td></tr>
+            <tr>
+              <td class="bold">311201 Peças Scania</td>
+              <td class="r"><input type="text" class="mono" value="2.106" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="2.062" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="1.881" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="2.044" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="2.141" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="2.042" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="2.011" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="2.031" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="1.978" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="1.981" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="1.875" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="mono" value="1.814" oninput="calcTotal(this)"></td>
+              <td class="r"><input type="text" class="calc readonly" id="total-311201-balcao" value="23.966"></td>
+            </tr>
+            <tr>
+              <td class="bold">311202 Peças Similar</td>
+              <td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td>
+              <td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td>
+              <td class="r"><input type="text" class="calc readonly" value="—"></td>
+            </tr>
+            <tr>
+              <td class="bold">311204 Combustíveis</td>
+              <td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td>
+              <td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td><td class="r"><input type="text" class="mono" value=""></td>
+              <td class="r"><input type="text" class="calc readonly" value="—"></td>
+            </tr>
+            <tr class="tbl-total">
+              <td>Subtotal Balcão</td>
+              <td class="r">2.106</td><td class="r">2.062</td><td class="r">1.881</td><td class="r">2.044</td><td class="r">2.141</td><td class="r">2.042</td>
+              <td class="r">2.011</td><td class="r">2.031</td><td class="r">1.978</td><td class="r">1.981</td><td class="r">1.875</td><td class="r">1.814</td>
+              <td class="r">23.966</td>
+            </tr>
+            <tr class="tbl-section"><td colspan="14">▸ Budget 2026 · Oficina (CCU 21212)</td></tr>
+            <tr>
+              <td class="bold">311201 Peças Scania</td>
+              <td class="r"><input type="text" class="mono" value="920"></td><td class="r"><input type="text" class="mono" value="1.080"></td><td class="r"><input type="text" class="mono" value="1.010"></td><td class="r"><input type="text" class="mono" value="970"></td><td class="r"><input type="text" class="mono" value="1.050"></td><td class="r"><input type="text" class="mono" value="990"></td>
+              <td class="r"><input type="text" class="mono" value="1.010"></td><td class="r"><input type="text" class="mono" value="980"></td><td class="r"><input type="text" class="mono" value="920"></td><td class="r"><input type="text" class="mono" value="940"></td><td class="r"><input type="text" class="mono" value="900"></td><td class="r"><input type="text" class="mono" value="870"></td>
+              <td class="r"><input type="text" class="calc readonly" value="11.640"></td>
+            </tr>
+            <tr class="tbl-total">
+              <td>Subtotal Oficina</td>
+              <td class="r">920</td><td class="r">1.080</td><td class="r">1.010</td><td class="r">970</td><td class="r">1.050</td><td class="r">990</td>
+              <td class="r">1.010</td><td class="r">980</td><td class="r">920</td><td class="r">940</td><td class="r">900</td><td class="r">870</td>
+              <td class="r">11.640</td>
+            </tr>
+            <tr style="background:#EFF6FF">
+              <td class="bold" style="color:var(--blue)">TOTAL GERAL PEÇAS</td>
+              <td class="r" style="font-weight:700;color:var(--blue)">3.026</td><td class="r" style="font-weight:700;color:var(--blue)">3.142</td><td class="r" style="font-weight:700;color:var(--blue)">2.891</td><td class="r" style="font-weight:700;color:var(--blue)">3.014</td><td class="r" style="font-weight:700;color:var(--blue)">3.191</td><td class="r" style="font-weight:700;color:var(--blue)">3.032</td>
+              <td class="r" style="font-weight:700;color:var(--blue)">3.021</td><td class="r" style="font-weight:700;color:var(--blue)">3.011</td><td class="r" style="font-weight:700;color:var(--blue)">2.898</td><td class="r" style="font-weight:700;color:var(--blue)">2.921</td><td class="r" style="font-weight:700;color:var(--blue)">2.775</td><td class="r" style="font-weight:700;color:var(--blue)">2.684</td>
+              <td class="r" style="font-weight:700;color:var(--blue)">35.606</td>
+            </tr>
+          </table>
+        </div>
+        <div class="form-footer">
+          <button class="btn"><i class="ti ti-device-floppy"></i> Salvar rascunho</button>
+          <button class="btn btn-green"><i class="ti ti-send"></i> Enviar para aprovação</button>
+          <span class="form-hint">Último salv.: hoje 14h32 · Cleiton Trajano · rascunho</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── BUDGET VS REAL ─── -->
+    <div class="screen" id="s-bvsr">
+      <div class="kpi-row">
+        <div class="kpi kpi-accent"><div class="kpi-label">Budget Mar/26 · Grupo</div><div class="kpi-value">R$ 19,2M</div><div class="kpi-sub">8 filiais</div></div>
+        <div class="kpi"><div class="kpi-label">Real Mar/26 · Grupo</div><div class="kpi-value">R$ 20,1M</div><div class="kpi-sub up">+R$ 900k acima do budget</div></div>
+        <div class="kpi"><div class="kpi-label">Atingimento</div><div class="kpi-value">104,7%</div><div class="kpi-sub up">acima do budget</div></div>
+        <div class="kpi"><div class="kpi-label">Melhor filial</div><div class="kpi-value">CBA</div><div class="kpi-sub up">+8,6% vs budget</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-chart-bar" style="color:var(--text-3)"></i>
+          <span class="card-title">Budget vs Real · Mar/2026</span>
+          <span class="card-sub">· valores em R$ mil</span>
+          <div class="card-actions">
+            <button class="btn btn-sm"><i class="ti ti-download"></i> Excel</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Filial</th><th class="r">Budget</th><th class="r">Real</th><th class="r">Var R$</th><th class="r">Var %</th><th class="r">Atingimento</th></tr>
+          <tr><td class="bold">CBA · Cuiabá</td><td class="r">4.421</td><td class="r">4.531</td><td class="r pos">+110</td><td class="r pos">+2,5%</td><td class="r pos">102,5%</td></tr>
+          <tr><td class="bold">ROO · Rondonópolis</td><td class="r">3.680</td><td class="r">3.542</td><td class="r neg">-138</td><td class="r neg">-3,7%</td><td class="r neg">96,2%</td></tr>
+          <tr><td class="bold">SNP · Sinop</td><td class="r">3.920</td><td class="r">4.108</td><td class="r pos">+188</td><td class="r pos">+4,8%</td><td class="r pos">104,8%</td></tr>
+          <tr><td class="bold">AGB · Água Boa</td><td class="r">980</td><td class="r">1.021</td><td class="r pos">+41</td><td class="r pos">+4,2%</td><td class="r pos">104,2%</td></tr>
+          <tr><td class="bold">SPZ · Sapezal</td><td class="r">1.240</td><td class="r">1.198</td><td class="r neg">-42</td><td class="r neg">-3,4%</td><td class="r neg">96,6%</td></tr>
+          <tr><td class="bold">REF · Reformadora</td><td class="r">1.100</td><td class="r">1.134</td><td class="r pos">+34</td><td class="r pos">+3,1%</td><td class="r pos">103,1%</td></tr>
+          <tr><td class="bold">MTP · Matuá</td><td class="r">480</td><td class="r">461</td><td class="r neg">-19</td><td class="r neg">-4,0%</td><td class="r neg">96,0%</td></tr>
+          <tr><td class="bold">CWS · Lucas RV</td><td class="r">460</td><td class="r">484</td><td class="r pos">+24</td><td class="r pos">+5,2%</td><td class="r pos">105,2%</td></tr>
+          <tr class="tbl-total"><td>Total Grupo</td><td class="r">16.281</td><td class="r">16.479</td><td class="r pos">+198</td><td class="r pos">+1,2%</td><td class="r pos">101,2%</td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ─── DRE ─── -->
+    <div class="screen" id="s-dre">
+      <div class="kpi-row">
+        <div class="kpi kpi-accent"><div class="kpi-label">Receita Líquida</div><div class="kpi-value">R$ 3,9M</div><div class="kpi-sub up">+2,5% vs budget</div></div>
+        <div class="kpi"><div class="kpi-label">Margem Bruta</div><div class="kpi-value">35,2%</div><div class="kpi-sub up">+0,8pp vs budget</div></div>
+        <div class="kpi"><div class="kpi-label">EBITDA</div><div class="kpi-value">R$ 636k</div><div class="kpi-sub up">+17,6% vs budget</div></div>
+        <div class="kpi"><div class="kpi-label">Margem EBITDA</div><div class="kpi-value">14,0%</div><div class="kpi-sub up">+1,8pp vs budget</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-file-analytics" style="color:var(--blue)"></i>
+          <span class="card-title">DRE Gerencial · CBA · Mar/2026</span>
+          <span class="card-sub">· R$ mil</span>
+          <div class="card-actions">
+            <select class="filter"><option>CBA · Cuiabá</option><option>ROO · Rondonópolis</option><option>Grupo</option></select>
+            <select class="filter"><option>Mar/2026</option><option>Fev/2026</option><option>Jan/2026</option><option>Acum. 2026</option></select>
+          </div>
+        </div>
+        <div class="dre-row header"><span class="dre-label">Linha DRE</span><span class="dre-val">Budget</span><span class="dre-val">Real</span><span class="dre-var">Var %</span></div>
+        <div class="dre-row"><span class="dre-label" style="font-weight:600">(+) Receita Bruta</span><span class="dre-val">4.421</span><span class="dre-val">4.531</span><span class="dre-var pos">+2,5%</span></div>
+        <div class="dre-row indent"><span class="dre-label">(-) Impostos sobre vendas</span><span class="dre-val">-620</span><span class="dre-val">-635</span><span class="dre-var neg">-2,4%</span></div>
+        <div class="dre-row indent"><span class="dre-label">(-) Devoluções e descontos</span><span class="dre-val">0</span><span class="dre-val">0</span><span class="dre-var">—</span></div>
+        <div class="dre-row" style="background:var(--blue-bg)"><span class="dre-label" style="font-weight:600;color:var(--blue)">(=) Receita Líquida</span><span class="dre-val" style="color:var(--blue);font-weight:600">3.801</span><span class="dre-val" style="color:var(--blue);font-weight:600">3.896</span><span class="dre-var pos">+2,5%</span></div>
+        <div class="dre-row indent"><span class="dre-label">(-) CPV — Custo peças/serviços</span><span class="dre-val">-2.280</span><span class="dre-val">-2.298</span><span class="dre-var neg">-0,8%</span></div>
+        <div class="dre-row" style="background:var(--verde-claro)"><span class="dre-label" style="font-weight:600;color:var(--verde-escuro)">(=) Lucro Bruto</span><span class="dre-val" style="color:var(--verde-escuro);font-weight:600">1.521</span><span class="dre-val" style="color:var(--verde-escuro);font-weight:600">1.598</span><span class="dre-var pos">+5,1%</span></div>
+        <div class="dre-row indent"><span class="dre-label" style="color:var(--text-3)">% Margem Bruta</span><span class="dre-val" style="color:var(--text-3)">34,4%</span><span class="dre-val pos">35,2%</span><span class="dre-var pos">+0,8pp</span></div>
+        <div class="dre-row indent"><span class="dre-label">(-) Despesas pessoal (folha+enc.)</span><span class="dre-val">-680</span><span class="dre-val">-665</span><span class="dre-var pos">+2,2%</span></div>
+        <div class="dre-row indent"><span class="dre-label">(-) Despesas administrativas</span><span class="dre-val">-300</span><span class="dre-val">-297</span><span class="dre-var pos">+1,0%</span></div>
+        <div class="dre-row ebitda"><span class="dre-label">(=) EBITDA</span><span class="dre-val">541</span><span class="dre-val">636</span><span class="dre-var pos">+17,6%</span></div>
+        <div class="dre-row indent"><span class="dre-label" style="color:var(--text-3)">% Margem EBITDA</span><span class="dre-val" style="color:var(--text-3)">12,2%</span><span class="dre-val pos">14,0%</span><span class="dre-var pos">+1,8pp</span></div>
+        <div class="dre-row indent"><span class="dre-label">(-) Depreciação e amortização</span><span class="dre-val">-80</span><span class="dre-val">-80</span><span class="dre-var">0,0%</span></div>
+        <div class="dre-row total"><span class="dre-label">(=) EBIT</span><span class="dre-val">461</span><span class="dre-val">556</span><span class="dre-var pos">+20,6%</span></div>
+      </div>
+    </div>
+
+    <!-- ─── COLABORADORES ─── -->
+    <div class="screen" id="s-colaboradores">
+      <div class="kpi-row">
+        <div class="kpi kpi-accent"><div class="kpi-label">Total colaboradores</div><div class="kpi-value">247</div><div class="kpi-sub">8 filiais</div></div>
+        <div class="kpi"><div class="kpi-label">Custo folha orçado</div><div class="kpi-value">R$ 8,2M</div><div class="kpi-sub">ano 2026</div></div>
+        <div class="kpi"><div class="kpi-label">Custo médio / colab.</div><div class="kpi-value">R$ 33,2k</div><div class="kpi-sub">com encargos</div></div>
+        <div class="kpi"><div class="kpi-label">% Folha / Receita</div><div class="kpi-value">3,6%</div><div class="kpi-sub up">dentro da meta</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-users" style="color:#534AB7"></i>
+          <span class="card-title">Colaboradores</span>
+          <span class="card-sub">· headcount orçado 2026</span>
+          <div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo</button></div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Nome</th><th>Cargo</th><th>Filial</th><th>CCU</th><th class="r">Sal. Base</th><th class="r">Encargos (50%)</th><th class="r">Benefícios</th><th class="r">Total mês</th><th class="r">Status</th></tr>
+          <tr><td class="bold">Pedro Rikelmy L. Ribeiro</td><td>Lubrificador III</td><td>SPZ</td><td>Oficina</td><td class="r">5.685</td><td class="r">2.842</td><td class="r">300</td><td class="r">8.827</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+          <tr><td class="bold">Elizangela P. C. Gomes</td><td>Lubrificador I</td><td>SNP</td><td>Oficina</td><td class="r">4.730</td><td class="r">2.365</td><td class="r">300</td><td class="r">7.395</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+          <tr><td class="bold">Carlos Davi S. Barbosa</td><td>Lubrificador I</td><td>AGB</td><td>Oficina</td><td class="r">5.144</td><td class="r">2.572</td><td class="r">300</td><td class="r">8.016</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+          <tr><td class="bold">Giovane G. de Souza</td><td>Lubrificador I</td><td>CBA</td><td>Oficina</td><td class="r">4.367</td><td class="r">2.184</td><td class="r">300</td><td class="r">6.851</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+          <tr><td class="bold">Leandro G. Machado</td><td>Lubrificador III</td><td>SNP</td><td>Oficina</td><td class="r">4.538</td><td class="r">2.269</td><td class="r">300</td><td class="r">7.107</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ─── OPEX ─── -->
+    <div class="screen" id="s-opex">
+      <div class="kpi-row">
+        <div class="kpi kpi-accent"><div class="kpi-label">OPEX orçado 2026</div><div class="kpi-value">R$ 18,4M</div><div class="kpi-sub">grupo</div></div>
+        <div class="kpi"><div class="kpi-label">Pessoal (automático)</div><div class="kpi-value">R$ 8,2M</div><div class="kpi-sub">vem do headcount</div></div>
+        <div class="kpi"><div class="kpi-label">Administrativo</div><div class="kpi-value">R$ 10,2M</div><div class="kpi-sub">digitado pelos gerentes</div></div>
+        <div class="kpi"><div class="kpi-label">OPEX / Receita</div><div class="kpi-value">8,0%</div><div class="kpi-sub up">dentro da meta</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-receipt" style="color:#854F0B"></i>
+          <span class="card-title">Despesas Operacionais · CBA · 2026</span>
+          <span class="card-sub">· R$ mil</span>
+        </div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Categoria</th><th>Conta</th><th class="r">Jan</th><th class="r">Fev</th><th class="r">Mar</th><th class="r">Q1</th><th class="r">Total anual</th><th class="r">% OPEX</th></tr>
+          <tr class="tbl-section"><td colspan="8">Pessoal — alimentado automaticamente pelo Headcount</td></tr>
+          <tr><td class="bold">Folha de pagamento</td><td style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-size:11px">511001</td><td class="r">680</td><td class="r">680</td><td class="r">680</td><td class="r">2.040</td><td class="r bold">8.160</td><td class="r">44%</td></tr>
+          <tr><td class="bold">Encargos sociais</td><td style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-size:11px">511002</td><td class="r">340</td><td class="r">340</td><td class="r">340</td><td class="r">1.020</td><td class="r bold">4.080</td><td class="r">22%</td></tr>
+          <tr><td class="bold">Benefícios</td><td style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-size:11px">511003</td><td class="r">60</td><td class="r">60</td><td class="r">60</td><td class="r">180</td><td class="r bold">720</td><td class="r">4%</td></tr>
+          <tr class="tbl-section"><td colspan="8">Administrativo — digitado pelo gerente</td></tr>
+          <tr><td class="bold">Aluguel</td><td style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-size:11px">512001</td><td class="r">120</td><td class="r">120</td><td class="r">120</td><td class="r">360</td><td class="r bold">1.440</td><td class="r">8%</td></tr>
+          <tr><td class="bold">Energia elétrica</td><td style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-size:11px">512002</td><td class="r">45</td><td class="r">45</td><td class="r">45</td><td class="r">135</td><td class="r bold">540</td><td class="r">3%</td></tr>
+          <tr><td class="bold">Serviços de terceiros</td><td style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-size:11px">512010</td><td class="r">80</td><td class="r">80</td><td class="r">80</td><td class="r">240</td><td class="r bold">960</td><td class="r">5%</td></tr>
+          <tr class="tbl-total"><td>Total OPEX CBA</td><td></td><td class="r">1.325</td><td class="r">1.325</td><td class="r">1.325</td><td class="r">3.975</td><td class="r">18.900</td><td class="r">100%</td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ─── FORECAST ─── -->
+    <div class="screen" id="s-forecast">
+      <div class="kpi-row">
+        <div class="kpi kpi-accent"><div class="kpi-label">Budget anual · Grupo</div><div class="kpi-value">R$ 229M</div><div class="kpi-sub">orçado 2026</div></div>
+        <div class="kpi"><div class="kpi-label">Real acumulado (3m)</div><div class="kpi-value">R$ 57,4M</div><div class="kpi-sub">jan a mar/2026</div></div>
+        <div class="kpi"><div class="kpi-label">Projeção anual</div><div class="kpi-value">R$ 232,5M</div><div class="kpi-sub up">+1,5% vs budget</div></div>
+        <div class="kpi"><div class="kpi-label">Tendência</div><div class="kpi-value" style="color:var(--verde)">↑ Positiva</div><div class="kpi-sub up">grupo acima do budget</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <i class="ti ti-trending-up" style="color:var(--verde)"></i>
+          <span class="card-title">Forecast de fechamento 2026</span>
+          <span class="card-sub">· projeção baseada no realizado jan–mar</span>
+        </div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Filial</th><th class="r">Budget anual</th><th class="r">Real acum. (3m)</th><th class="r">Média mensal real</th><th class="r">Projeção anual</th><th class="r">Desvio R$</th><th class="r">Desvio %</th></tr>
+          <tr><td class="bold">CBA · Cuiabá</td><td class="r">52.800</td><td class="r">13.593</td><td class="r">4.531</td><td class="r pos">54.372</td><td class="r pos">+1.572</td><td class="r pos">+2,9%</td></tr>
+          <tr><td class="bold">ROO · Rondonópolis</td><td class="r">43.200</td><td class="r">10.626</td><td class="r">3.542</td><td class="r neg">42.504</td><td class="r neg">-696</td><td class="r neg">-1,6%</td></tr>
+          <tr><td class="bold">SNP · Sinop</td><td class="r">46.800</td><td class="r">12.324</td><td class="r">4.108</td><td class="r pos">49.296</td><td class="r pos">+2.496</td><td class="r pos">+5,3%</td></tr>
+          <tr><td class="bold">AGB · Água Boa</td><td class="r">11.400</td><td class="r">3.063</td><td class="r">1.021</td><td class="r pos">12.252</td><td class="r pos">+852</td><td class="r pos">+7,5%</td></tr>
+          <tr><td class="bold">SPZ · Sapezal</td><td class="r">14.400</td><td class="r">3.594</td><td class="r">1.198</td><td class="r neg">14.376</td><td class="r neg">-24</td><td class="r neg">-0,2%</td></tr>
+          <tr><td class="bold">REF · Reformadora</td><td class="r">13.200</td><td class="r">3.402</td><td class="r">1.134</td><td class="r pos">13.608</td><td class="r pos">+408</td><td class="r pos">+3,1%</td></tr>
+          <tr><td class="bold">MTP · Matuá</td><td class="r">6.000</td><td class="r">1.383</td><td class="r">461</td><td class="r neg">5.532</td><td class="r neg">-468</td><td class="r neg">-7,8%</td></tr>
+          <tr><td class="bold">CWS · Lucas RV</td><td class="r">5.800</td><td class="r">1.452</td><td class="r">484</td><td class="r pos">5.808</td><td class="r pos">+8</td><td class="r pos">+0,1%</td></tr>
+          <tr class="tbl-total"><td>Total Grupo</td><td class="r">193.600</td><td class="r">49.437</td><td class="r">16.479</td><td class="r pos">197.748</td><td class="r pos">+4.148</td><td class="r pos">+2,1%</td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ─── TELAS SIMPLES ─── -->
+    <div class="screen" id="s-alertas">
+      <div class="card"><div class="card-header"><i class="ti ti-bell" style="color:var(--red)"></i><span class="card-title">Alertas ativos</span><span class="card-sub">· 3 pendências críticas</span></div>
+      <div class="tbl-wrap"><table><tr><th>Filial</th><th>Alerta</th><th>Prazo</th><th class="r">Criticidade</th></tr>
+      <tr><td class="bold">SNP · Sinop</td><td>Budget incompleto — faltam Serviços, Comissões, Headcount e OPEX</td><td>15/12/2025</td><td class="r"><span class="badge b-red">Urgente</span></td></tr>
+      <tr><td class="bold">MTP · Matuá</td><td>Budget não iniciado — nenhuma aba preenchida</td><td>15/12/2025</td><td class="r"><span class="badge b-red">Urgente</span></td></tr>
+      <tr><td class="bold">ROO · Rondonópolis</td><td>Aba Comissões pendente de preenchimento</td><td>15/12/2025</td><td class="r"><span class="badge b-amber">Atenção</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-empresas">
+      <div class="card"><div class="card-header"><i class="ti ti-building" style="color:var(--text-3)"></i><span class="card-title">Empresas e filiais</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Nova filial</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Código</th><th>Nome</th><th>Cidade</th><th>UF</th><th class="r">Status</th></tr>
+      <tr><td class="bold">CBA</td><td>Rota Oeste Veículos · Cuiabá</td><td>Cuiabá</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">ROO</td><td>Rota Oeste Veículos · Rondonópolis</td><td>Rondonópolis</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">SNP</td><td>Rota Oeste Veículos · Sinop</td><td>Sinop</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">SPZ</td><td>Rota Oeste Veículos · Sapezal</td><td>Sapezal</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">AGB</td><td>Rota Oeste Veículos · Água Boa</td><td>Água Boa</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">REF</td><td>Rota Oeste Veículos · Reformadora</td><td>Guarantã do Norte</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">MTP</td><td>Rota Oeste Veículos · Matuá</td><td>Matupá</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">CWS</td><td>Rota Oeste Veículos · Lucas Rio Verde</td><td>Lucas do Rio Verde</td><td>MT</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-plano">
+      <div class="card"><div class="card-header"><i class="ti ti-list-numbers" style="color:var(--text-3)"></i><span class="card-title">Plano de contas</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Nova conta</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th class="r">Status</th></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">311201</td><td>Venda Peças Scania</td><td><span class="badge b-green">Receita</span></td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">311202</td><td>Venda Peças Similar</td><td><span class="badge b-green">Receita</span></td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">311204</td><td>Venda Combustíveis e Lubrificantes</td><td><span class="badge b-green">Receita</span></td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">311302</td><td>Venda Serviços de Terceiros</td><td><span class="badge b-green">Receita</span></td><td>Serviço</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">311305</td><td>Venda Serviços Garantia</td><td><span class="badge b-green">Receita</span></td><td>Serviço</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">311501</td><td>Comissão PMV</td><td><span class="badge b-blue">Receita</span></td><td>Comissão</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">511001</td><td>Folha de Pagamento</td><td><span class="badge b-amber">Despesa</span></td><td>Pessoal</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">512001</td><td>Aluguel</td><td><span class="badge b-amber">Despesa</span></td><td>Administrativo</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-ccu">
+      <div class="card"><div class="card-header"><i class="ti ti-sitemap" style="color:var(--text-3)"></i><span class="card-title">Centros de custo</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo CCU</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Código</th><th>Descrição</th><th>Filial</th><th>Tipo</th><th class="r">Status</th></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">21211</td><td>Peças Balcão</td><td>CBA</td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">21212</td><td>Peças Oficina</td><td>CBA</td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">21213</td><td>Peças Garantia</td><td>CBA</td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">21214</td><td>Peças PMS</td><td>CBA</td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">21223</td><td>Serviços Oficina</td><td>CBA</td><td>Serviço</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">61211</td><td>Peças Balcão</td><td>AGB</td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold" style="font-family:'IBM Plex Mono',monospace">61212</td><td>Peças Oficina</td><td>AGB</td><td>Peças</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-usuarios">
+      <div class="card"><div class="card-header"><i class="ti ti-users" style="color:var(--text-3)"></i><span class="card-title">Usuários e permissões</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo usuário</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Filial</th><th class="r">Status</th></tr>
+      <tr><td class="bold">Cleiton Trajano</td><td>controller@rotaoeste.com.br</td><td><span class="badge b-blue">Controller</span></td><td>Grupo todo</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">Gestor CBA</td><td>gestor.cba@rotaoeste.com.br</td><td><span class="badge b-gray">Gerente</span></td><td>CBA</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">Gestor ROO</td><td>gestor.roo@rotaoeste.com.br</td><td><span class="badge b-gray">Gerente</span></td><td>ROO</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      <tr><td class="bold">Diretoria</td><td>diretoria@rotaoeste.com.br</td><td><span class="badge" style="background:#EEEDFE;color:#534AB7">Diretoria</span></td><td>Grupo todo</td><td class="r"><span class="badge b-green">Ativo</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-ciclo">
+      <div class="card"><div class="card-header"><i class="ti ti-calendar-event" style="color:var(--blue)"></i><span class="card-title">Ciclo orçamentário 2026</span><div class="card-actions"><button class="btn btn-green btn-sm"><i class="ti ti-plus"></i> Abrir novo ciclo</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Etapa</th><th>Responsável</th><th>Prazo</th><th class="r">Status</th></tr>
+      <tr><td class="bold">Abertura do ciclo</td><td>Controller</td><td>01/11/2025</td><td class="r"><span class="badge b-green">Concluído</span></td></tr>
+      <tr><td class="bold">Preenchimento pelas filiais</td><td>Gerentes</td><td>15/12/2025</td><td class="r"><span class="badge b-amber">Em andamento</span></td></tr>
+      <tr><td class="bold">Revisão controller</td><td>Controller</td><td>22/12/2025</td><td class="r"><span class="badge b-gray">Aguardando</span></td></tr>
+      <tr><td class="bold">Aprovação diretoria</td><td>Diretoria</td><td>30/12/2025</td><td class="r"><span class="badge b-gray">Aguardando</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-aprovacao">
+      <div class="card"><div class="card-header"><i class="ti ti-checks" style="color:var(--verde)"></i><span class="card-title">Fila de aprovação</span><span class="card-sub">· 3 budgets aguardando revisão</span></div>
+      <div class="tbl-wrap"><table><tr><th>Filial</th><th>Módulo</th><th>Enviado por</th><th>Data envio</th><th class="r">Ação</th></tr>
+      <tr><td class="bold">CBA · Cuiabá</td><td>Budget completo</td><td>Gestor CBA</td><td>10/12/2025</td><td class="r" style="display:flex;gap:6px;justify-content:flex-end"><button class="btn btn-green btn-sm">Aprovar</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)">Devolver</button></td></tr>
+      <tr><td class="bold">AGB · Água Boa</td><td>Budget completo</td><td>Gestor AGB</td><td>11/12/2025</td><td class="r" style="display:flex;gap:6px;justify-content:flex-end"><button class="btn btn-green btn-sm">Aprovar</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)">Devolver</button></td></tr>
+      <tr><td class="bold">REF · Reformadora</td><td>Budget completo</td><td>Gestor REF</td><td>12/12/2025</td><td class="r" style="display:flex;gap:6px;justify-content:flex-end"><button class="btn btn-green btn-sm">Aprovar</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)">Devolver</button></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-versoes">
+      <div class="card"><div class="card-header"><i class="ti ti-history" style="color:var(--text-3)"></i><span class="card-title">Histórico de versões</span></div>
+      <div class="tbl-wrap"><table><tr><th>Versão</th><th>Cenário</th><th>Ano</th><th>Criado por</th><th>Data</th><th class="r">Status</th></tr>
+      <tr><td class="bold">v3</td><td>Realista</td><td>2026</td><td>Cleiton Trajano</td><td>08/12/2025</td><td class="r"><span class="badge b-green">Aprovado</span></td></tr>
+      <tr><td class="bold">v4</td><td>Conservador</td><td>2026</td><td>Cleiton Trajano</td><td>08/12/2025</td><td class="r"><span class="badge b-amber">Rascunho</span></td></tr>
+      <tr><td class="bold">v2</td><td>Realista</td><td>2025</td><td>Cleiton Trajano</td><td>10/12/2024</td><td class="r"><span class="badge b-green">Aprovado</span></td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-posVenda">
+      <div class="card"><div class="card-header"><i class="ti ti-tools" style="color:#854F0B"></i><span class="card-title">Pós-venda · Mapa de Vendas</span><span class="card-sub">· budget vs realizado · R$ mil</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Lançar realizado</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Grupo / Conta</th><th class="r">Rec. Bruta</th><th class="r">(-) Impostos</th><th class="r">Rec. Líquida</th><th class="r">(-) Custos</th><th class="r">Lucro Bruto</th><th class="r">Margem %</th></tr>
+      <tr class="tbl-section"><td colspan="7">Peças Balcão e Oficina</td></tr>
+      <tr><td>Budget 2026</td><td class="r">35.606</td><td class="r">0</td><td class="r">35.606</td><td class="r">-25.635</td><td class="r">9.971</td><td class="r">28,0%</td></tr>
+      <tr><td>Real Jan/2026</td><td class="r">5.076</td><td class="r">0</td><td class="r">5.076</td><td class="r">-3.655</td><td class="r pos">1.421</td><td class="r pos">28,0%</td></tr>
+      <tr class="tbl-section"><td colspan="7">Serviços Oficina e Garantia</td></tr>
+      <tr><td>Budget 2026</td><td class="r">18.200</td><td class="r">0</td><td class="r">18.200</td><td class="r">-7.280</td><td class="r">10.920</td><td class="r">60,0%</td></tr>
+      <tr><td>Real Jan/2026</td><td class="r">1.820</td><td class="r">0</td><td class="r">1.820</td><td class="r">-728</td><td class="r pos">1.092</td><td class="r pos">60,0%</td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-comissoes">
+      <div class="card"><div class="card-header"><i class="ti ti-currency-dollar" style="color:#854F0B"></i><span class="card-title">Comissões orçadas 2026</span><div class="card-actions"><button class="btn btn-primary btn-sm">Orçar comissões</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Filial</th><th>Tipo</th><th>Conta</th><th class="r">Jan</th><th class="r">Fev</th><th class="r">Mar</th><th class="r">Total anual</th></tr>
+      <tr><td class="bold">CBA</td><td>PMV</td><td style="font-family:'IBM Plex Mono',monospace;font-size:11px">311501</td><td class="r">45</td><td class="r">48</td><td class="r">42</td><td class="r bold">520</td></tr>
+      <tr><td class="bold">CBA</td><td>PMS</td><td style="font-family:'IBM Plex Mono',monospace;font-size:11px">311502</td><td class="r">12</td><td class="r">14</td><td class="r">11</td><td class="r bold">152</td></tr>
+      <tr><td class="bold">CBA</td><td>Top Dealers</td><td style="font-family:'IBM Plex Mono',monospace;font-size:11px">311503</td><td class="r">8</td><td class="r">8</td><td class="r">8</td><td class="r bold">96</td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-conectividade">
+      <div class="card"><div class="card-header"><i class="ti ti-wifi" style="color:var(--blue)"></i><span class="card-title">Conectividade Scania</span><div class="card-actions"><button class="btn btn-primary btn-sm">Orçar</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Filial</th><th class="r">Jan</th><th class="r">Fev</th><th class="r">Mar</th><th class="r">Q1</th><th class="r">Total 2026</th></tr>
+      <tr><td class="bold">CBA · Cuiabá</td><td class="r">28</td><td class="r">28</td><td class="r">28</td><td class="r">84</td><td class="r bold">336</td></tr>
+      <tr><td class="bold">ROO · Rondonópolis</td><td class="r">18</td><td class="r">18</td><td class="r">18</td><td class="r">54</td><td class="r bold">216</td></tr>
+      <tr><td class="bold">SNP · Sinop</td><td class="r">22</td><td class="r">22</td><td class="r">22</td><td class="r">66</td><td class="r bold">264</td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-folha">
+      <div class="card"><div class="card-header"><i class="ti ti-report-money" style="color:#534AB7"></i><span class="card-title">Folha orçada 2026</span><span class="card-sub">· calculada automaticamente do headcount</span></div>
+      <div class="tbl-wrap"><table><tr><th>Colaborador</th><th>Filial</th><th class="r">Sal. Base</th><th class="r">Encargos</th><th class="r">Benefícios</th><th class="r">Total mês</th><th class="r">Total ano</th></tr>
+      <tr><td class="bold">Pedro Rikelmy</td><td>SPZ</td><td class="r">5.685</td><td class="r">2.842</td><td class="r">300</td><td class="r">8.827</td><td class="r bold">105.924</td></tr>
+      <tr><td class="bold">Carlos Davi</td><td>AGB</td><td class="r">5.144</td><td class="r">2.572</td><td class="r">300</td><td class="r">8.016</td><td class="r bold">96.192</td></tr>
+      <tr><td class="bold">Elizangela Gomes</td><td>SNP</td><td class="r">4.730</td><td class="r">2.365</td><td class="r">300</td><td class="r">7.395</td><td class="r bold">88.740</td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-cargos">
+      <div class="card"><div class="card-header"><i class="ti ti-hierarchy" style="color:#534AB7"></i><span class="card-title">Cargos e funções</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo cargo</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Cargo</th><th>Nível</th><th class="r">Sal. mín.</th><th class="r">Sal. máx.</th><th class="r">Colaboradores ativos</th></tr>
+      <tr><td class="bold">Lubrificador I</td><td>Operacional</td><td class="r">4.200</td><td class="r">4.800</td><td class="r">18</td></tr>
+      <tr><td class="bold">Lubrificador II</td><td>Operacional</td><td class="r">4.800</td><td class="r">5.400</td><td class="r">12</td></tr>
+      <tr><td class="bold">Lubrificador III</td><td>Operacional</td><td class="r">5.400</td><td class="r">6.200</td><td class="r">8</td></tr>
+      </table></div></div>
+    </div>
+
+    <div class="screen" id="s-capex">
+      <div class="card"><div class="card-header"><i class="ti ti-truck" style="color:#854F0B"></i><span class="card-title">CAPEX 2026</span><div class="card-actions"><button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo CAPEX</button></div></div>
+      <div class="tbl-wrap"><table><tr><th>Descrição</th><th>Filial</th><th class="r">Valor</th><th>Mês previsto</th><th>Depreciação</th><th class="r">Status</th></tr>
+      <tr><td class="bold">Elevador hidráulico</td><td>CBA</td><td class="r">85.000</td><td>Mar/2026</td><td>10 anos</td><td class="r"><span class="badge b-green">Aprovado</span></td></tr>
+      <tr><td class="bold">Scanner diagnóstico</td><td>ROO</td><td class="r">42.000</td><td>Jun/2026</td><td>5 anos</td><td class="r"><span class="badge b-amber">Pendente</span></td></tr>
+      </table></div></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+const titles = {
+  dashboard:['Dashboard','/ grupo rov / budget 2026'],
+  alertas:['Alertas','/ 3 pendências críticas'],
+  empresas:['Empresas e Filiais','/ cadastros'],
+  plano:['Plano de Contas','/ cadastros'],
+  ccu:['Centros de Custo','/ cadastros'],
+  usuarios:['Usuários','/ cadastros / permissões'],
+  ciclo:['Ciclo Orçamentário','/ budget 2026'],
+  entrada:['Entrada de Budget','/ budget 2026 / cba cuiabá'],
+  aprovacao:['Aprovação','/ budget 2026 / fila'],
+  versoes:['Versões','/ budget / histórico'],
+  posVenda:['Pós-venda','/ receitas / mapa de vendas'],
+  comissoes:['Comissões','/ receitas'],
+  conectividade:['Conectividade Scania','/ receitas'],
+  colaboradores:['Colaboradores','/ headcount'],
+  folha:['Folha Orçada','/ headcount / 2026'],
+  cargos:['Cargos e Funções','/ headcount'],
+  opex:['Despesas Operacionais','/ opex / cba'],
+  capex:['CAPEX','/ opex / investimentos'],
+  bvsr:['Budget vs Real','/ análise / mar/2026'],
+  dre:['DRE Gerencial','/ análise / cba / mar/2026'],
+  forecast:['Forecast 2026','/ análise / projeção anual']
+};
+
+function nav(el, id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById('s-' + id);
+  if (s) s.classList.add('active');
+  const t = titles[id] || [id, ''];
+  document.getElementById('page-title').textContent = t[0];
+  document.getElementById('page-bc').textContent = t[1];
+}
+
+function filterAno(v) {
+  document.getElementById('page-bc').textContent =
+    document.getElementById('page-bc').textContent.replace(/\d{4}/, v);
+}
+</script>
+</body>
+</html>

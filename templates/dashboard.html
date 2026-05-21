@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — ROV{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_bc %}/ grupo rov / budget {{ ano_atual }}{% endblock %}
+
+{% block topbar_actions %}
+<select class="filter">
+  <option>{{ ano_atual }}</option>
+  <option>{{ ano_atual - 1 }}</option>
+</select>
+<select class="filter">
+  <option value="">Todas as filiais</option>
+  {% for f in filiais %}
+  <option>{{ f.codigo }} · {{ f.cidade }}</option>
+  {% endfor %}
+</select>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-row">
+  <div class="kpi kpi-accent">
+    <div class="kpi-label">Linhas de Budget</div>
+    <div class="kpi-value">{{ stats.linhas_budget }}</div>
+    <div class="kpi-sub">{{ stats.versoes_budget }} versões cadastradas</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Filiais ativas</div>
+    <div class="kpi-value">{{ stats.filiais_ativas }} / {{ stats.total_filiais }}</div>
+    <div class="kpi-sub up">grupo rov · mato grosso</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Centros de Custo</div>
+    <div class="kpi-value">{{ stats.total_ccus }}</div>
+    <div class="kpi-sub">{{ stats.total_contas }} contas no plano</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Registros Realizados</div>
+    <div class="kpi-value">{{ stats.linhas_realizado }}</div>
+    <div class="kpi-sub">2023 · 2024</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-building" style="color:var(--text-3)"></i>
+    <span class="card-title">Filiais cadastradas</span>
+    <span class="card-sub">· grupo rov</span>
+    <div class="card-actions">
+      <a href="/cadastros/filiais" class="btn btn-sm btn-primary"><i class="ti ti-plus"></i> Gerenciar</a>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Filial</th><th>Cidade</th><th>UF</th><th class="r">Status</th>
+      </tr>
+      {% for f in filiais %}
+      <tr>
+        <td class="bold">{{ f.codigo }} · {{ f.nome }}</td>
+        <td>{{ f.cidade }}</td>
+        <td>{{ f.uf }}</td>
+        <td class="r">
+          {% if f.ativo == 1 %}
+            <span class="badge b-green">Ativo</span>
+          {% else %}
+            <span class="badge b-gray">Inativo</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <i class="ti ti-history" style="color:var(--text-3)"></i>
+      <span class="card-title">Versões de Budget</span>
+      <div class="card-actions">
+        <a href="/budget/versoes" class="btn btn-sm">Ver todas</a>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Ano</th><th>Cenário</th><th class="r">Status</th></tr>
+        {% for v in versoes %}
+        <tr>
+          <td class="bold mono">{{ v.ano }}</td>
+          <td>{{ v.cenario }}</td>
+          <td class="r">
+            {% if v.status == 'aprovado' %}
+              <span class="badge b-green">Aprovado</span>
+            {% elif v.status == 'em_revisao' %}
+              <span class="badge b-amber">Em revisão</span>
+            {% else %}
+              <span class="badge b-gray">{{ v.status }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <i class="ti ti-chart-bar" style="color:var(--verde)"></i>
+      <span class="card-title">Acesso rápido</span>
+    </div>
+    <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 8px;">
+      <a href="/analise/bvsr" class="btn" style="justify-content:flex-start">
+        <i class="ti ti-chart-bar" style="color:var(--verde)"></i> Budget vs Realizado
+      </a>
+      <a href="/analise/dre" class="btn" style="justify-content:flex-start">
+        <i class="ti ti-file-analytics" style="color:var(--blue)"></i> DRE Gerencial
+      </a>
+      <a href="/analise/forecast" class="btn" style="justify-content:flex-start">
+        <i class="ti ti-trending-up" style="color:var(--verde)"></i> Forecast de fechamento
+      </a>
+      <a href="/budget/entrada" class="btn btn-primary" style="justify-content:flex-start">
+        <i class="ti ti-pencil"></i> Lançar Budget
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

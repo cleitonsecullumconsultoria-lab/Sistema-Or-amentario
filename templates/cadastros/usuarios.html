@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Usuários — ROV{% endblock %}
+{% block page_title %}Usuários e Permissões{% endblock %}
+{% block page_bc %}/ cadastros{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" onclick="document.getElementById('dlg-novo').showModal()">
+  <i class="ti ti-plus"></i> Novo Usuário
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-users" style="color:var(--text-3)"></i>
+    <span class="card-title">Usuários cadastrados</span>
+    <span class="card-sub">· {{ usuarios|length }} registro(s)</span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Filial</th><th class="r">Status</th><th class="r">Ações</th></tr>
+      {% for u in usuarios %}
+      <tr>
+        <td class="bold">{{ u.nome }}</td>
+        <td style="color:var(--text-3)">{{ u.email }}</td>
+        <td>
+          {% if u.perfil == 'admin' %}<span class="badge b-blue">Admin</span>
+          {% elif u.perfil == 'controller' %}<span class="badge b-blue">Controller</span>
+          {% elif u.perfil == 'gerente' %}<span class="badge b-gray">Gerente</span>
+          {% elif u.perfil == 'diretoria' %}<span class="badge b-purple">Diretoria</span>
+          {% else %}<span class="badge b-gray">{{ u.perfil }}</span>{% endif %}
+        </td>
+        <td>{{ u.filial_nome }}</td>
+        <td class="r">
+          {% if u.ativo == 1 %}<span class="badge b-green">Ativo</span>
+          {% else %}<span class="badge b-gray">Inativo</span>{% endif %}
+        </td>
+        <td class="r" style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-sm" onclick="editarUsuario({{ u.id }})">
+            <i class="ti ti-pencil"></i> Editar
+          </button>
+          <form method="post" action="/cadastros/usuarios/excluir/{{ u.id }}" style="display:inline"
+                onsubmit="return confirm('Excluir usuário {{ u.nome }}?')">
+            <button type="submit" class="btn btn-sm" style="color:var(--red);border-color:var(--red)">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px">Nenhum usuário cadastrado.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="ti ti-shield-check" style="color:var(--text-3)"></i>
+    <span class="card-title">Perfis de acesso</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;padding:14px 18px">
+    <div style="background:var(--blue-bg);border-radius:7px;padding:10px 14px;border-left:3px solid var(--blue)">
+      <strong style="color:var(--blue)">Admin · Controller</strong>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">Acesso total · pode reabrir versões aprovadas</div>
+    </div>
+    <div style="background:var(--bg);border-radius:7px;padding:10px 14px;border-left:3px solid var(--border-strong)">
+      <strong>Gerente</strong>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">Acesso restrito à sua filial</div>
+    </div>
+    <div style="background:#EEEDFE;border-radius:7px;padding:10px 14px;border-left:3px solid #534AB7">
+      <strong style="color:#534AB7">Diretoria</strong>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">Visualização consolidada · somente leitura</div>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlg-novo">
+  <div class="modal-header">Novo Usuário<button class="modal-close" onclick="document.getElementById('dlg-novo').close()">✕</button></div>
+  <form method="post" action="/cadastros/usuarios/criar">
+    <div class="modal-body">
+      <div class="form-grid" style="padding:0">
+        <div class="form-group form-full">
+          <label class="form-label">Nome *</label>
+          <input class="form-input" type="text" name="nome" required placeholder="Nome completo">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">E-mail *</label>
+          <input class="form-input" type="email" name="email" required placeholder="usuario@rotaoeste.com.br">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Perfil *</label>
+          <select class="form-select" name="perfil" required>
+            <option value="admin">Admin</option>
+            <option value="controller">Controller</option>
+            <option value="gerente">Gerente</option>
+            <option value="diretoria">Diretoria</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filial</label>
+          <select class="form-select" name="filial_id">
+            <option value="">— Todas (sem restrição) —</option>
+            {% for f in filiais %}
+            <option value="{{ f.id }}">{{ f.codigo }} · {{ f.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="document.getElementById('dlg-novo').close()">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-editar">
+  <div class="modal-header">Editar Usuário<button class="modal-close" onclick="document.getElementById('dlg-editar').close()">✕</button></div>
+  <form method="post" id="form-editar" action="">
+    <div class="modal-body">
+      <div class="form-grid" style="padding:0">
+        <div class="form-group form-full">
+          <label class="form-label">Nome *</label>
+          <input class="form-input" type="text" name="nome" id="edit-nome" required>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">E-mail *</label>
+          <input class="form-input" type="email" name="email" id="edit-email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Perfil *</label>
+          <select class="form-select" name="perfil" id="edit-perfil" required>
+            <option value="admin">Admin</option>
+            <option value="controller">Controller</option>
+            <option value="gerente">Gerente</option>
+            <option value="diretoria">Diretoria</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filial</label>
+          <select class="form-select" name="filial_id" id="edit-filial_id">
+            <option value="">— Todas (sem restrição) —</option>
+            {% for f in filiais %}
+            <option value="{{ f.id }}">{{ f.codigo }} · {{ f.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo" id="edit-ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const USUARIOS = {{ usuarios | tojson }};
+function editarUsuario(id) {
+  const u = USUARIOS.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('form-editar').action = '/cadastros/usuarios/editar/' + id;
+  document.getElementById('edit-nome').value = u.nome || '';
+  document.getElementById('edit-email').value = u.email || '';
+  document.getElementById('edit-perfil').value = u.perfil || 'gerente';
+  document.getElementById('edit-filial_id').value = u.filial_id || '';
+  document.getElementById('edit-ativo').value = u.ativo == 1 ? '1' : '0';
+  document.getElementById('dlg-editar').showModal();
+}
+</script>
+{% endblock %}

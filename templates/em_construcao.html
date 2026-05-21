@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ modulo }} — ROV{% endblock %}
+{% block page_title %}{{ modulo }}{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center; padding: 60px 24px;">
+  <div style="font-size: 56px; margin-bottom: 16px;">🚧</div>
+  <h2 style="color: var(--azul); margin-bottom: 8px;">{{ modulo }}</h2>
+  <p style="color: var(--cinza2); margin-bottom: 24px;">
+    Este módulo está em desenvolvimento e será entregue em uma próxima sprint.
+  </p>
+  <a href="/" class="btn btn-primary">← Voltar ao Dashboard</a>
+</div>
+{% endblock %}
