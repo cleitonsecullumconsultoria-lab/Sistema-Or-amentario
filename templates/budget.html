@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% set active = 'budget' %}
+{% block page_title %}Budget{% endblock %}
+
+{% block content %}
+<div class="pg-header">
+  <div>
+    <h2>Budget por Filial</h2>
+    <p>Versão {{ versao_info.ano }} — {{ versao_info.cenario }} ({{ versao_info.status }})</p>
+  </div>
+</div>
+
+{# ── Filter ── #}
+<form method="get" class="filter-bar">
+  <label>Versão:</label>
+  <select name="versao_id" onchange="this.form.submit()">
+    {% for v in versoes %}
+    <option value="{{ v.id }}" {% if v.id == versao_id %}selected{% endif %}>{{ v.label }}</option>
+    {% endfor %}
+  </select>
+  <span class="badge info">Receitas brutas orçadas · 8 filiais</span>
+</form>
+
+{# ── Pivot table ── #}
+<div class="card">
+  <div class="card-header">
+    <h3>Receita Bruta Orçada — {{ versao_info.ano }}</h3>
+    <span class="badge info">Total: {{ grand_total | fmt_m }}</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Filial</th>
+          {% for m in meses %}<th>{{ m }}</th>{% endfor %}
+          <th>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fid in filiais_ord %}
+        {% set f = pivot[fid] %}
+        <tr>
+          <td><span class="tag">{{ f.codigo }}</span>{{ f.nome }}</td>
+          {% for v in f.meses %}<td>{{ v | fmt_m }}</td>{% endfor %}
+          <td style="font-weight:700; color:var(--azul)">{{ f.total | fmt_m }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>TOTAL</td>
+          {% for v in totais_mes %}<td>{{ v | fmt_m }}</td>{% endfor %}
+          <td>{{ grand_total | fmt_m }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

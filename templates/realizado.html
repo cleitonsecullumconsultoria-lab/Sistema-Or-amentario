@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% set active = 'realizado' %}
+{% block page_title %}Realizado{% endblock %}
+
+{% block content %}
+<div class="pg-header">
+  <div>
+    <h2>Dados Realizados</h2>
+    <p>Receita realizada por filial e mês</p>
+  </div>
+</div>
+
+{% if msg %}
+<div class="alert alert-success">✅ {{ msg }}</div>
+{% endif %}
+
+{# ── Filter ── #}
+<form method="get" class="filter-bar">
+  <label>Ano:</label>
+  <select name="ano" onchange="this.form.submit()">
+    {% for a in anos %}
+    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+    {% endfor %}
+  </select>
+  <label>Filial:</label>
+  <select name="filial_id" onchange="this.form.submit()">
+    <option value="">Todas as filiais</option>
+    {% for f in filiais %}
+    <option value="{{ f.id }}" {% if f.id == filial_id %}selected{% endif %}>{{ f.codigo }} — {{ f.nome }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{# ── Data table ── #}
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header">
+    <h3>Receita Realizada {{ ano }}</h3>
+    <span class="badge info">Contas de receita · Jan–Dez</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Filial</th>
+          {% for m in meses %}<th>{{ m }}</th>{% endfor %}
+          <th>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in tabela %}
+        <tr>
+          <td><span class="tag">{{ r.filial_codigo }}</span>{{ r.filial_nome }}</td>
+          {% for v in r.meses %}<td>{{ v | fmt_m }}</td>{% endfor %}
+          <td style="font-weight:700; color:var(--azul)">{{ r.total | fmt_m }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="14" style="text-align:center; color:#888; padding:28px">
+            Nenhum dado encontrado para os filtros selecionados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── Add entry form ── #}
+<div class="card">
+  <div class="card-header">
+    <h3>✏️ Adicionar Lançamento Manual</h3>
+  </div>
+  <div class="card-body">
+    <form method="post" action="/realizado">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Filial</label>
+          <select name="filial_id" required>
+            {% for f in filiais %}
+            <option value="{{ f.id }}" {% if f.id == filial_id %}selected{% endif %}>{{ f.codigo }} — {{ f.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Centro de Custo</label>
+          <select name="ccu_id" required>
+            {% for c in ccus_lista %}
+            <option value="{{ c.id }}">{{ c.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Conta</label>
+          <select name="conta_id" required>
+            {% for c in contas_lista %}
+            <option value="{{ c.id }}">{{ c.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ano</label>
+          <input type="number" name="ano" value="{{ ano }}" min="2020" max="2035" required>
+        </div>
+        <div class="form-group">
+          <label>Mês (1–12)</label>
+          <input type="number" name="mes" min="1" max="12" required>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" name="valor" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label>Origem</label>
+          <input type="text" name="origem" value="manual">
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button type="submit" class="btn btn-success">💾 Salvar Lançamento</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

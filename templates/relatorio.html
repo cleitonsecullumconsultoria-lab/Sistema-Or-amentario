@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% set active = 'relatorio' %}
+{% block page_title %}Relatório{% endblock %}
+
+{% block content %}
+<div class="pg-header">
+  <div>
+    <h2>Relatório Budget vs Realizado</h2>
+    <p>Comparativo por filial, conta e mês — gerado ao vivo</p>
+  </div>
+</div>
+
+{# ── Filter ── #}
+<form method="get" class="filter-bar">
+  <label>Versão Budget:</label>
+  <select name="versao_id">
+    {% for v in versoes %}
+    <option value="{{ v.id }}" {% if v.id == versao_id %}selected{% endif %}>{{ v.label }}</option>
+    {% endfor %}
+  </select>
+  <label>Ano Realizado:</label>
+  <select name="ano">
+    {% for a in anos %}
+    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary">🔍 Atualizar</button>
+</form>
+
+{# ── KPIs ── #}
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-label">Budget Total (Receita)</div>
+    <div class="kpi-val">{{ kpis.tot_budget | fmt_m }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Realizado</div>
+    <div class="kpi-val {{ 'verde' if kpis.tot_var_pct >= 0 else 'neg' }}">{{ kpis.tot_real | fmt_m }}</div>
+  </div>
+  <div class="kpi {{ 'kpi-verde' if kpis.tot_var_pct >= 0 else 'kpi-neg' }}">
+    <div class="kpi-label">Variação Total</div>
+    <div class="kpi-val {{ 'verde' if kpis.tot_var_pct >= 0 else 'neg' }}">{{ kpis.tot_var_pct | fmt_pct }}</div>
+    <div class="kpi-sub">{{ (kpis.tot_real - kpis.tot_budget) | fmt_real }}</div>
+  </div>
+  <div class="kpi kpi-verde">
+    <div class="kpi-label">Margem Bruta</div>
+    <div class="kpi-val verde">{{ "%.2f"|format(kpis.margem)|replace(".",",") }}%</div>
+  </div>
+</div>
+
+{# ── Chart ── #}
+<div class="card" style="margin-bottom:22px">
+  <div class="card-header">
+    <h3>Budget vs Realizado por Filial</h3>
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#1D3557"></span>Budget</span>
+      <span><span class="dot" style="background:#1D9E75"></span>Realizado</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <canvas id="chartRel" height="200"></canvas>
+  </div>
+</div>
+
+{# ── Summary table ── #}
+<div class="card" style="margin-bottom:22px">
+  <div class="card-header">
+    <h3>Resumo por Filial</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Filial</th>
+          <th>Budget</th>
+          <th>Realizado</th>
+          <th>Variação R$</th>
+          <th>Variação %</th>
+          <th>Margem %</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in tabela %}
+        <tr>
+          <td><span class="tag">{{ r.filial_codigo }}</span>{{ r.filial_nome }}</td>
+          <td>{{ r.budget | fmt_m }}</td>
+          <td>{{ r.real   | fmt_m }}</td>
+          <td class="var-{{ r.var_pct | var_cls }}">{{ r.var_rs  | fmt_real }}</td>
+          <td class="var-{{ r.var_pct | var_cls }}">{{ r.var_pct | fmt_pct }}</td>
+          <td>{{ "%.2f"|format(r.margem)|replace(".",",") }}%</td>
+          <td>
+            {% if r.var_pct > 0.1 %}✅ Acima
+            {% elif r.var_pct < -1.0 %}🔴 Atenção
+            {% else %}🟡 No limite{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        {% set tb = tabela|sum(attribute='budget') %}
+        {% set tr_ = tabela|sum(attribute='real') %}
+        <tr>
+          <td>TOTAL</td>
+          <td>{{ tb  | fmt_m }}</td>
+          <td>{{ tr_ | fmt_m }}</td>
+          <td class="var-{{ kpis.tot_var_pct | var_cls }}">{{ (tr_ - tb) | fmt_real }}</td>
+          <td class="var-{{ kpis.tot_var_pct | var_cls }}">{{ kpis.tot_var_pct | fmt_pct }}</td>
+          <td>{{ "%.2f"|format(kpis.margem)|replace(".",",") }}%</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+{# ── Detail table ── #}
+{% if detalhe %}
+<div class="card">
+  <div class="card-header">
+    <h3>Detalhe por Filial / Conta / Mês</h3>
+    <span class="badge info">{{ detalhe | length }} linhas</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Filial</th>
+          <th>Conta</th>
+          <th>Mês</th>
+          <th>Budget</th>
+          <th>Realizado</th>
+          <th>Var R$</th>
+          <th>Var %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in detalhe[:300] %}
+        <tr>
+          <td>{{ d.filial_codigo }}</td>
+          <td style="font-size:12px; color:var(--texto-md)">{{ d.conta_nome }}</td>
+          <td>{{ ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"][(d.mes|int)-1] }}</td>
+          <td>{{ d.budget | fmt_m }}</td>
+          <td>{{ d.real   | fmt_m }}</td>
+          <td class="var-{{ d.var_pct | var_cls }}">{{ d.var_rs  | fmt_real }}</td>
+          <td class="var-{{ d.var_pct | var_cls }}">{{ d.var_pct | fmt_pct }}</td>
+        </tr>
+        {% endfor %}
+        {% if detalhe|length > 300 %}
+        <tr>
+          <td colspan="7" style="text-align:center; color:#888; padding:14px; font-size:12px">
+            … mais {{ detalhe|length - 300 }} linhas — execute o script Python para relatório completo
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const fmtM = v => "R$ " + (Math.abs(v)/1e6).toFixed(1).replace(".",",") + "M";
+new Chart(document.getElementById("chartRel"), {
+  type: "bar",
+  data: {
+    labels: {{ chart_labels | safe }},
+    datasets: [
+      { label:"Budget",    data: {{ chart_budget | safe }}, backgroundColor:"#1D3557", borderRadius:4, barPercentage:.8, categoryPercentage:.7 },
+      { label:"Realizado", data: {{ chart_real   | safe }}, backgroundColor:"#1D9E75", borderRadius:4, barPercentage:.8, categoryPercentage:.7 },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+fmtM(c.parsed.y)}} },
+    scales: {
+      x: { grid:{display:false}, ticks:{font:{weight:"700"}} },
+      y: { grid:{color:"#EDF2F7"}, ticks:{callback:v=>"R$ "+(v/1e6).toFixed(0)+"M"} },
+    },
+  },
+});
+</script>
+{% endblock %}
