@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% set active = 'dashboard' %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="pg-header">
+  <div>
+    <h2>Dashboard Executivo</h2>
+    <p>{{ periodo }} · 8 filiais · Mato Grosso</p>
+  </div>
+  <span class="badge info">Budget 2024 vs Realizado 2024</span>
+</div>
+
+{# ── KPIs ── #}
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-label">Receita Total — Realizado</div>
+    <div class="kpi-val">{{ kpis.tot_real | fmt_m }}</div>
+    <div class="kpi-sub">
+      Budget: {{ kpis.tot_budget | fmt_m }}
+      <span class="badge {{ 'pos' if kpis.tot_var_pct >= 0 else 'neg' }}">
+        {{ kpis.tot_var_pct | fmt_pct }}
+      </span>
+    </div>
+  </div>
+
+  <div class="kpi kpi-verde">
+    <div class="kpi-label">Margem Bruta Média</div>
+    <div class="kpi-val verde">{{ "%.2f"|format(kpis.margem)|replace(".",",") }}%</div>
+    <div class="kpi-sub">Peças 27–30% · Serviços 55–68%</div>
+  </div>
+
+  <div class="kpi kpi-verde">
+    <div class="kpi-label">Melhor Performance</div>
+    <div class="kpi-val" style="font-size:20px">{{ kpis.best_filial }}</div>
+    <div class="kpi-sub">
+      <span class="badge pos">{{ kpis.best_var | fmt_pct }}</span>
+    </div>
+  </div>
+
+  <div class="kpi kpi-neg">
+    <div class="kpi-label">Maior Desvio do Budget</div>
+    <div class="kpi-val neg" style="font-size:20px">{{ kpis.worst_filial }}</div>
+    <div class="kpi-sub">
+      <span class="badge neg">{{ kpis.worst_var | fmt_pct }}</span>
+    </div>
+  </div>
+</div>
+
+{# ── Charts ── #}
+<div class="charts-row">
+  <div class="card">
+    <div class="card-header">
+      <h3>Budget vs Realizado por Filial</h3>
+      <div class="chart-legend">
+        <span><span class="dot" style="background:#1D3557"></span>Budget</span>
+        <span><span class="dot" style="background:#1D9E75"></span>Realizado</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <canvas id="chartFilial" height="250"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Evolução Mensal — 2024</h3>
+      <div class="chart-legend">
+        <span><span class="dot" style="background:#457B9D;opacity:.6"></span>Budget</span>
+        <span><span class="dot" style="background:#1D9E75"></span>Realizado</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <canvas id="chartMensal" height="250"></canvas>
+    </div>
+  </div>
+</div>
+
+{# ── Table ── #}
+<div class="card">
+  <div class="card-header">
+    <h3>Desempenho por Filial</h3>
+    <span class="badge info">Receitas brutas · Jan–Dez 2024</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Filial</th>
+          <th>Budget</th>
+          <th>Realizado</th>
+          <th>Variação R$</th>
+          <th>Variação %</th>
+          <th>Margem %</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in tabela %}
+        <tr>
+          <td><span class="tag">{{ r.filial_codigo }}</span>{{ r.filial_nome }}</td>
+          <td>{{ r.budget | fmt_m }}</td>
+          <td>{{ r.real   | fmt_m }}</td>
+          <td class="var-{{ r.var_pct | var_cls }}">{{ r.var_rs  | fmt_real }}</td>
+          <td class="var-{{ r.var_pct | var_cls }}">{{ r.var_pct | fmt_pct }}</td>
+          <td>{{ "%.2f"|format(r.margem)|replace(".",",") }}%</td>
+          <td>
+            {% if r.var_pct > 0.1 %}✅ Acima
+            {% elif r.var_pct < -1.0 %}🔴 Atenção
+            {% else %}🟡 No limite{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        {% set tb = tabela|sum(attribute='budget') %}
+        {% set tr_ = tabela|sum(attribute='real') %}
+        <tr>
+          <td>TOTAL CONSOLIDADO</td>
+          <td>{{ tb  | fmt_m }}</td>
+          <td>{{ tr_ | fmt_m }}</td>
+          <td class="var-{{ kpis.tot_var_pct | var_cls }}">{{ (tr_ - tb) | fmt_real }}</td>
+          <td class="var-{{ kpis.tot_var_pct | var_cls }}">{{ kpis.tot_var_pct | fmt_pct }}</td>
+          <td>{{ "%.2f"|format(kpis.margem)|replace(".",",") }}%</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const fmtM = v => "R$ " + (Math.abs(v)/1e6).toFixed(1).replace(".",",") + "M";
+
+new Chart(document.getElementById("chartFilial"), {
+  type: "bar",
+  data: {
+    labels: {{ chart_labels | safe }},
+    datasets: [
+      { label:"Budget",    data: {{ chart_budget | safe }}, backgroundColor:"#1D3557", borderRadius:4, barPercentage:.8, categoryPercentage:.7 },
+      { label:"Realizado", data: {{ chart_real   | safe }}, backgroundColor:"#1D9E75", borderRadius:4, barPercentage:.8, categoryPercentage:.7 },
+    ],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+fmtM(c.parsed.y)}} },
+    scales: {
+      x: { grid:{display:false}, ticks:{font:{weight:"700"}} },
+      y: { grid:{color:"#EDF2F7"}, ticks:{callback:v=>"R$ "+(v/1e6).toFixed(0)+"M", font:{size:11}} },
+    },
+  },
+});
+
+new Chart(document.getElementById("chartMensal"), {
+  type: "line",
+  data: {
+    labels: {{ chart_meses | safe }},
+    datasets: [
+      { label:"Budget",    data: {{ chart_bud_mes  | safe }}, borderColor:"#457B9D", borderWidth:2, borderDash:[5,4], pointRadius:3, fill:false, tension:.35 },
+      { label:"Realizado", data: {{ chart_real_mes | safe }}, borderColor:"#1D9E75", backgroundColor:"rgba(29,158,117,.08)", borderWidth:2.5, pointRadius:4, fill:true, tension:.35 },
+    ],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+fmtM(c.parsed.y)}} },
+    scales: {
+      x: { grid:{display:false} },
+      y: { grid:{color:"#EDF2F7"}, ticks:{callback:v=>"R$ "+(v/1e6).toFixed(0)+"M", font:{size:11}} },
+    },
+  },
+});
+</script>
+{% endblock %}
