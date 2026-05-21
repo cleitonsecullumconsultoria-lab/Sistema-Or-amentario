@@ -43,7 +43,7 @@
       <tr>
         <th>Nome</th><th>Cargo</th><th>Filial</th><th>CCU</th>
         <th class="r">Sal. Base</th><th class="r">Encargos (50%)</th>
-        <th class="r">Benefícios</th><th class="r">Total/mês</th><th class="r">Status</th>
+        <th class="r">Benefícios</th><th class="r">Total/mês</th><th class="r">Status</th><th class="r">Ações</th>
       </tr>
       {% for c in colaboradores %}
       <tr>
@@ -59,9 +59,20 @@
           {% if c.ativo == 1 %}<span class="badge b-green">Ativo</span>
           {% else %}<span class="badge b-gray">Inativo</span>{% endif %}
         </td>
+        <td class="r" style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-sm" onclick="editarColab({{ c.id }})">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <form method="post" action="/headcount/colaboradores/excluir/{{ c.id }}" style="display:inline"
+                onsubmit="return confirm('Excluir {{ c.nome }}?')">
+            <button type="submit" class="btn btn-sm" style="color:var(--red);border-color:var(--red)">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </td>
       </tr>
       {% else %}
-      <tr><td colspan="9" style="text-align:center;color:var(--text-3);padding:24px">Nenhum colaborador cadastrado.</td></tr>
+      <tr><td colspan="10" style="text-align:center;color:var(--text-3);padding:24px">Nenhum colaborador cadastrado.</td></tr>
       {% endfor %}
       {% if colaboradores %}
       <tr class="tbl-total">
@@ -70,7 +81,7 @@
         <td class="r">{{ stats.total_encargos_fmt }}</td>
         <td class="r">{{ stats.total_beneficios_fmt }}</td>
         <td class="r">{{ stats.total_mes_fmt }}</td>
-        <td></td>
+        <td></td><td></td>
       </tr>
       {% endif %}
     </table>
@@ -121,4 +132,68 @@
     </div>
   </form>
 </dialog>
+
+<!-- Modal Editar Colaborador -->
+<dialog id="dlg-editar">
+  <div class="modal-header">Editar Colaborador<button class="modal-close" onclick="document.getElementById('dlg-editar').close()">✕</button></div>
+  <form method="post" id="form-editar" action="">
+    <div class="modal-body">
+      <div class="form-grid" style="padding:0">
+        <div class="form-group form-full">
+          <label class="form-label">Nome completo *</label>
+          <input class="form-input" type="text" name="nome" id="edit-nome" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cargo *</label>
+          <input class="form-input" type="text" name="cargo" id="edit-cargo" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filial *</label>
+          <select class="form-select" name="filial_id" id="edit-filial_id" required>
+            <option value="">— Selecione —</option>
+            {% for f in filiais %}
+            <option value="{{ f.id }}">{{ f.codigo }} · {{ f.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salário Base (R$) *</label>
+          <input class="form-input mono" type="text" name="salario_base" id="edit-salario_base" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Benefícios (R$/mês)</label>
+          <input class="form-input mono" type="text" name="beneficios" id="edit-beneficios">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="ativo" id="edit-ativo">
+            <option value="1">Ativo</option><option value="0">Inativo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const COLABS = {{ colaboradores | tojson }};
+function editarColab(id) {
+  const c = COLABS.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('form-editar').action = '/headcount/colaboradores/editar/' + id;
+  document.getElementById('edit-nome').value = c.nome || '';
+  document.getElementById('edit-cargo').value = c.cargo || '';
+  document.getElementById('edit-filial_id').value = c.filial_id || '';
+  document.getElementById('edit-salario_base').value = c.salario_base || '0';
+  document.getElementById('edit-beneficios').value = c.beneficios || '0';
+  document.getElementById('edit-ativo').value = c.ativo == 1 ? '1' : '0';
+  document.getElementById('dlg-editar').showModal();
+}
+</script>
 {% endblock %}

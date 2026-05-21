@@ -38,12 +38,15 @@ async def colaboradores(request: Request):
         tot = sal + enc + ben
         total_sal += sal; total_enc += enc; total_ben += ben; total_mes += tot
         colab.append({
-            "id": c["id"],
+            "id": int(c["id"]),
             "nome": c.get("nome", ""),
             "cargo": c.get("cargo", ""),
+            "filial_id": int(c.get("filial_id") or 0),
             "filial_codigo": f["codigo"] if f else "—",
             "ccu_nome": c.get("ccu_nome", ""),
             "ativo": int(c.get("ativo", 1)),
+            "salario_base": sal,
+            "beneficios": ben,
             "salario_fmt": _fmt(sal),
             "encargos_fmt": _fmt(enc),
             "beneficios_fmt": _fmt(ben),
@@ -69,6 +72,41 @@ async def colaboradores(request: Request):
         "ano": 2026,
         "active_page": "colaboradores",
     })
+
+
+@router.post("/colaboradores/editar/{colab_id}")
+async def colaboradores_editar(
+    request: Request,
+    colab_id: int,
+    nome: str = Form(...),
+    cargo: str = Form(...),
+    filial_id: int = Form(...),
+    salario_base: str = Form("0"),
+    beneficios: str = Form("0"),
+    ativo: str = Form("1"),
+):
+    db = DB()
+    df = db.tabela("Colaboradores")
+    sal = float(salario_base.replace(".", "").replace(",", ".") or 0)
+    ben = float(beneficios.replace(".", "").replace(",", ".") or 0)
+    mask = df["id"] == colab_id
+    df.loc[mask, "nome"] = nome.strip()
+    df.loc[mask, "cargo"] = cargo.strip()
+    df.loc[mask, "filial_id"] = filial_id
+    df.loc[mask, "salario_base"] = sal
+    df.loc[mask, "beneficios"] = ben
+    df.loc[mask, "ativo"] = 1 if ativo == "1" else 0
+    db.salvar("Colaboradores", df)
+    return RedirectResponse("/headcount/colaboradores", status_code=303)
+
+
+@router.post("/colaboradores/excluir/{colab_id}")
+async def colaboradores_excluir(request: Request, colab_id: int):
+    db = DB()
+    df = db.tabela("Colaboradores")
+    df = df[df["id"] != colab_id]
+    db.salvar("Colaboradores", df)
+    return RedirectResponse("/headcount/colaboradores", status_code=303)
 
 
 @router.post("/colaboradores/criar")
