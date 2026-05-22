@@ -196,17 +196,9 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 .filtros { display: flex; gap: 10px; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: var(--surface); }
 .filtros label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; }
 
-
-/* SPA overrides */
-*, *::before, *::after { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
-.app { display: flex; height: 100vh; overflow: hidden; }
-.sidebar { width: var(--sidebar-w, 228px); background: var(--azul, #1D3557); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; height: 100vh; }
-.spa-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: var(--bg, #f4f5f7); }
-.screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
-.screen.active { display: flex; }
-.topbar { flex-shrink: 0; background: var(--surface, #fff); border-bottom: 1px solid var(--border, #e2e5ea); padding: 0 24px; height: var(--topbar-h, 56px); display: flex; align-items: center; gap: 12px; }
-.screen-body { flex: 1; overflow-y: auto; padding: 24px; }
+.page-section { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.page-section.active { display: flex; }
+.page-section > .content { flex: 1; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -222,7 +214,7 @@ html, body { height: 100%; margin: 0; }
 
   <div class="nav-group">
     <div class="nav-group-label">Visão Geral</div>
-    <a href="#dashboard" data-page="dashboard" class="nav-item active">
+    <a href="#dashboard" class="nav-item active">
       <i class="ti ti-layout-dashboard"></i>Dashboard
     </a>
     <a href="/alertas" class="nav-item ">
@@ -232,75 +224,75 @@ html, body { height: 100%; margin: 0; }
 
   <div class="nav-group">
     <div class="nav-group-label">Cadastros</div>
-    <a href="#filiais" data-page="filiais" class="nav-item ">
+    <a href="#filiais" class="nav-item ">
       <i class="ti ti-building"></i>Empresas e Filiais
     </a>
-    <a href="#plano_contas" data-page="plano_contas" class="nav-item ">
+    <a href="#plano_contas" class="nav-item ">
       <i class="ti ti-list-numbers"></i>Plano de Contas
     </a>
-    <a href="#centros_custo" data-page="centros_custo" class="nav-item ">
+    <a href="#centros_custo" class="nav-item ">
       <i class="ti ti-sitemap"></i>Centros de Custo
     </a>
-    <a href="#usuarios" data-page="usuarios" class="nav-item ">
+    <a href="#usuarios" class="nav-item ">
       <i class="ti ti-users"></i>Usuários
     </a>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Budget</div>
-    <a href="#ciclo" data-page="ciclo" class="nav-item ">
+    <a href="#ciclo" class="nav-item ">
       <i class="ti ti-calendar-event"></i>Ciclo Orçamentário
     </a>
-    <a href="#entrada" data-page="entrada" class="nav-item ">
+    <a href="#entrada" class="nav-item ">
       <i class="ti ti-pencil"></i>Entrada de Budget
     </a>
-    <a href="#aprovacao" data-page="aprovacao" class="nav-item ">
+    <a href="#aprovacao" class="nav-item ">
       <i class="ti ti-checks"></i>Aprovação
     </a>
-    <a href="#versoes" data-page="versoes" class="nav-item ">
+    <a href="#versoes" class="nav-item ">
       <i class="ti ti-history"></i>Versões
     </a>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Receitas</div>
-    <a href="#pos_venda" data-page="pos_venda" class="nav-item ">
+    <a href="#pos_venda" class="nav-item ">
       <i class="ti ti-tools"></i>Pós-venda
     </a>
-    <a href="#comissoes" data-page="comissoes" class="nav-item ">
+    <a href="#comissoes" class="nav-item ">
       <i class="ti ti-currency-dollar"></i>Comissões
     </a>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Headcount</div>
-    <a href="#colaboradores" data-page="colaboradores" class="nav-item ">
+    <a href="#colaboradores" class="nav-item ">
       <i class="ti ti-id-badge"></i>Colaboradores
     </a>
-    <a href="#folha" data-page="folha" class="nav-item ">
+    <a href="#folha" class="nav-item ">
       <i class="ti ti-report-money"></i>Folha Orçada
     </a>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">OPEX</div>
-    <a href="#despesas" data-page="despesas" class="nav-item ">
+    <a href="#despesas" class="nav-item ">
       <i class="ti ti-receipt"></i>Despesas Oper.
     </a>
-    <a href="#capex" data-page="capex" class="nav-item ">
+    <a href="#capex" class="nav-item ">
       <i class="ti ti-truck"></i>CAPEX
     </a>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Análise</div>
-    <a href="#bvsr" data-page="bvsr" class="nav-item ">
+    <a href="#bvsr" class="nav-item ">
       <i class="ti ti-chart-bar"></i>Budget vs Real
     </a>
-    <a href="#dre" data-page="dre" class="nav-item ">
+    <a href="#dre" class="nav-item ">
       <i class="ti ti-file-analytics"></i>DRE Gerencial
     </a>
-    <a href="#forecast" data-page="forecast" class="nav-item ">
+    <a href="#forecast" class="nav-item ">
       <i class="ti ti-trending-up"></i>Forecast
     </a>
   </div>
@@ -316,9 +308,8 @@ html, body { height: 100%; margin: 0; }
     </div>
   </div>
   </nav>
-  <div class="spa-main" id="spa-main">
-    <div id="screen-dashboard" class="screen" style="display:none">
-  <div class="topbar"><div>
+  <div class="main">
+    <section id="page-dashboard" class="page-section"><div class="topbar"><div>
       <span class="page-title">Dashboard</span>
       <span class="page-breadcrumb">/ grupo rov / budget 2026</span>
     </div>
@@ -349,8 +340,7 @@ html, body { height: 100%; margin: 0; }
   
 </select>
 
-    </div></div>
-  <div class="screen-body"><div class="kpi-row">
+    </div></div><div class="content"><div class="kpi-row">
   <div class="kpi kpi-accent">
     <div class="kpi-label">Linhas de Budget</div>
     <div class="kpi-value">8352</div>
@@ -379,7 +369,7 @@ html, body { height: 100%; margin: 0; }
     <span class="card-title">Filiais cadastradas</span>
     <span class="card-sub">· grupo rov</span>
     <div class="card-actions">
-      <a href="#filiais" data-page="filiais" class="btn btn-sm btn-primary"><i class="ti ti-plus"></i> Gerenciar</a>
+      <a href="#filiais" class="btn btn-sm btn-primary"><i class="ti ti-plus"></i> Gerenciar</a>
     </div>
   </div>
   <div class="tbl-wrap">
@@ -486,7 +476,7 @@ html, body { height: 100%; margin: 0; }
       <i class="ti ti-history" style="color:var(--text-3)"></i>
       <span class="card-title">Versões de Budget</span>
       <div class="card-actions">
-        <a href="#versoes" data-page="versoes" class="btn btn-sm">Ver todas</a>
+        <a href="#versoes" class="btn btn-sm">Ver todas</a>
       </div>
     </div>
     <div class="tbl-wrap">
@@ -553,16 +543,16 @@ html, body { height: 100%; margin: 0; }
       <span class="card-title">Acesso rápido</span>
     </div>
     <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 8px;">
-      <a href="#bvsr" data-page="bvsr" class="btn" style="justify-content:flex-start">
+      <a href="#bvsr" class="btn" style="justify-content:flex-start">
         <i class="ti ti-chart-bar" style="color:var(--verde)"></i> Budget vs Realizado
       </a>
-      <a href="#dre" data-page="dre" class="btn" style="justify-content:flex-start">
+      <a href="#dre" class="btn" style="justify-content:flex-start">
         <i class="ti ti-file-analytics" style="color:var(--blue)"></i> DRE Gerencial
       </a>
-      <a href="#forecast" data-page="forecast" class="btn" style="justify-content:flex-start">
+      <a href="#forecast" class="btn" style="justify-content:flex-start">
         <i class="ti ti-trending-up" style="color:var(--verde)"></i> Forecast de fechamento
       </a>
-      <a href="#entrada" data-page="entrada" class="btn btn-primary" style="justify-content:flex-start">
+      <a href="#entrada" class="btn btn-primary" style="justify-content:flex-start">
         <i class="ti ti-pencil"></i> Lançar Budget
       </a>
     </div>
@@ -575,10 +565,7 @@ html, body { height: 100%; margin: 0; }
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-filiais" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-filiais" class="page-section"><div class="topbar"><div>
       <span class="page-title">Empresas e Filiais</span>
       <span class="page-breadcrumb">/ cadastros</span>
     </div>
@@ -588,8 +575,7 @@ html, body { height: 100%; margin: 0; }
   <i class="ti ti-plus"></i> Nova Filial
 </button>
 
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-building" style="color:var(--text-3)"></i>
     <span class="card-title">Filiais cadastradas</span>
@@ -905,10 +891,7 @@ function editarFilial(id) {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-plano_contas" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-plano_contas" class="page-section"><div class="topbar"><div>
       <span class="page-title">Plano de Contas</span>
       <span class="page-breadcrumb">/ cadastros</span>
     </div>
@@ -918,8 +901,7 @@ function editarFilial(id) {
   <i class="ti ti-plus"></i> Nova Conta
 </button>
 
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="filtros">
     <label>Categoria:</label>
     <form method="get" style="display:flex;gap:8px;align-items:center">
@@ -1415,10 +1397,7 @@ function editarConta(id) {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-centros_custo" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-centros_custo" class="page-section"><div class="topbar"><div>
       <span class="page-title">Centros de Custo</span>
       <span class="page-breadcrumb">/ cadastros</span>
     </div>
@@ -1428,8 +1407,7 @@ function editarConta(id) {
   <i class="ti ti-plus"></i> Novo CCU
 </button>
 
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="filtros">
     <label>Filial:</label>
     <form method="get" style="display:flex;gap:8px;align-items:center">
@@ -2859,10 +2837,7 @@ function editarCCU(id) {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-usuarios" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-usuarios" class="page-section"><div class="topbar"><div>
       <span class="page-title">Usuários e Permissões</span>
       <span class="page-breadcrumb">/ cadastros</span>
     </div>
@@ -2872,8 +2847,7 @@ function editarCCU(id) {
   <i class="ti ti-plus"></i> Novo Usuário
 </button>
 
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-users" style="color:var(--text-3)"></i>
     <span class="card-title">Usuários cadastrados</span>
@@ -3147,17 +3121,13 @@ function editarUsuario(id) {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-ciclo" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-ciclo" class="page-section"><div class="topbar"><div>
       <span class="page-title">Ciclo Orçamentário</span>
       <span class="page-breadcrumb">/ budget 2026</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-calendar-event" style="color:var(--blue)"></i>
     <span class="card-title">Etapas do ciclo 2026</span>
@@ -3202,7 +3172,7 @@ function editarUsuario(id) {
     <span class="card-title">Status por filial</span>
     <span class="card-sub">· budget 2026</span>
     <div class="card-actions">
-      <a href="#entrada" data-page="entrada" class="btn btn-primary btn-sm"><i class="ti ti-pencil"></i> Lançar Budget</a>
+      <a href="#entrada" class="btn btn-primary btn-sm"><i class="ti ti-pencil"></i> Lançar Budget</a>
     </div>
   </div>
   <div class="tbl-wrap">
@@ -3323,17 +3293,13 @@ function editarUsuario(id) {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-versoes" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-versoes" class="page-section"><div class="topbar"><div>
       <span class="page-title">Versões de Budget</span>
       <span class="page-breadcrumb">/ budget / histórico</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-history" style="color:var(--text-3)"></i>
     <span class="card-title">Histórico de versões</span>
@@ -3438,10 +3404,7 @@ function editarUsuario(id) {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-entrada" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-entrada" class="page-section"><div class="topbar"><div>
       <span class="page-title">Entrada de Budget</span>
       <span class="page-breadcrumb">/ budget 2026 / grupo</span>
     </div>
@@ -3507,8 +3470,7 @@ function editarUsuario(id) {
   
 </select>
 
-    </div></div>
-  <div class="screen-body"><div class="alert-bar">
+    </div></div><div class="content"><div class="alert-bar">
   <i class="ti ti-lock"></i>
   <strong>Budget aprovado</strong> — esta versão está bloqueada para edição.
   Apenas o controller pode reabrir.
@@ -10809,17 +10771,13 @@ function calcRow(input) {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-aprovacao" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-aprovacao" class="page-section"><div class="topbar"><div>
       <span class="page-title">Aprovação de Budget</span>
       <span class="page-breadcrumb">/ budget / fila de aprovação</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-checks" style="color:var(--verde)"></i>
     <span class="card-title">Versões aguardando aprovação</span>
@@ -10881,10 +10839,7 @@ function calcRow(input) {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-pos_venda" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-pos_venda" class="page-section"><div class="topbar"><div>
       <span class="page-title">Receitas Pós-Venda</span>
       <span class="page-breadcrumb">/ receitas / mapa de vendas</span>
     </div>
@@ -10898,8 +10853,7 @@ function calcRow(input) {
   
 </select>
 
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-tools" style="color:#854F0B"></i>
     <span class="card-title">Receitas Pós-Venda · 2024</span>
@@ -11006,17 +10960,13 @@ function calcRow(input) {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-comissoes" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-comissoes" class="page-section"><div class="topbar"><div>
       <span class="page-title">Comissões</span>
       <span class="page-breadcrumb">/ receitas / comissões</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-currency-dollar" style="color:#854F0B"></i>
     <span class="card-title">Comissões orçadas 2024</span>
@@ -11296,17 +11246,13 @@ function calcRow(input) {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-colaboradores" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-colaboradores" class="page-section"><div class="topbar"><div>
       <span class="page-title">Colaboradores</span>
       <span class="page-breadcrumb">/ headcount / orçado 2026</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="kpi-row">
+    </div></div><div class="content"><div class="kpi-row">
   <div class="kpi kpi-accent">
     <div class="kpi-label">Total colaboradores</div>
     <div class="kpi-value">11</div>
@@ -11789,17 +11735,13 @@ function editarColab(id) {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-folha" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-folha" class="page-section"><div class="topbar"><div>
       <span class="page-title">Folha Orçada</span>
       <span class="page-breadcrumb">/ headcount / 2026</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-report-money" style="color:#534AB7"></i>
     <span class="card-title">Folha orçada 2026</span>
@@ -11888,10 +11830,7 @@ function editarColab(id) {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-despesas" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-despesas" class="page-section"><div class="topbar"><div>
       <span class="page-title">Despesas Operacionais</span>
       <span class="page-breadcrumb">/ opex / Grupo consolidado</span>
     </div>
@@ -11941,8 +11880,7 @@ function editarColab(id) {
   
 </select>
 
-    </div></div>
-  <div class="screen-body"><div class="kpi-row">
+    </div></div><div class="content"><div class="kpi-row">
   <div class="kpi kpi-accent">
     <div class="kpi-label">OPEX orçado 2024</div>
     <div class="kpi-value">0,0</div>
@@ -11998,17 +11936,13 @@ function irFiltro() {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-capex" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-capex" class="page-section"><div class="topbar"><div>
       <span class="page-title">CAPEX</span>
       <span class="page-breadcrumb">/ opex / investimentos</span>
     </div>
     <div class="topbar-right">
       
-    </div></div>
-  <div class="screen-body"><div class="card">
+    </div></div><div class="content"><div class="card">
   <div class="card-header">
     <i class="ti ti-truck" style="color:#854F0B"></i>
     <span class="card-title">CAPEX 2026</span>
@@ -12037,10 +11971,7 @@ function irFiltro() {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
-<div id="screen-bvsr" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-bvsr" class="page-section"><div class="topbar"><div>
       <span class="page-title">Budget vs Realizado</span>
       <span class="page-breadcrumb">/ análise / Acum./2024</span>
     </div>
@@ -12097,8 +12028,7 @@ function irFiltro() {
   <i class="ti ti-download"></i> Excel
 </a>
 
-    </div></div>
-  <div class="screen-body"><div class="kpi-row">
+    </div></div><div class="content"><div class="kpi-row">
   <div class="kpi kpi-accent">
     <div class="kpi-label">Budget Acum./2024 · Grupo</div>
     <div class="kpi-value">515.913,3</div>
@@ -12632,10 +12562,7 @@ function irFiltro() {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-dre" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-dre" class="page-section"><div class="topbar"><div>
       <span class="page-title">DRE Gerencial</span>
       <span class="page-breadcrumb">/ análise / Grupo / Dez/2024</span>
     </div>
@@ -12724,8 +12651,7 @@ function irFiltro() {
   
 </select>
 
-    </div></div>
-  <div class="screen-body"><div class="kpi-row">
+    </div></div><div class="content"><div class="kpi-row">
   <div class="kpi kpi-accent">
     <div class="kpi-label">Receita Bruta</div>
     <div class="kpi-value">23.365,0</div>
@@ -12835,10 +12761,7 @@ function irFiltro() {
 </script>
 
 </body>
-</html></div>
-</div>
-<div id="screen-forecast" class="screen" style="display:none">
-  <div class="topbar"><div>
+</html></div></section><section id="page-forecast" class="page-section"><div class="topbar"><div>
       <span class="page-title">Forecast de Fechamento</span>
       <span class="page-breadcrumb">/ análise / projeção 2024</span>
     </div>
@@ -12852,8 +12775,7 @@ function irFiltro() {
   
 </select>
 
-    </div></div>
-  <div class="screen-body"><div class="kpi-row">
+    </div></div><div class="content"><div class="kpi-row">
   <div class="kpi kpi-accent">
     <div class="kpi-label">Budget anual · Grupo</div>
     <div class="kpi-value">515.913,3</div>
@@ -13035,46 +12957,62 @@ function irFiltro() {
 </div><!-- /.app -->
 
 </body>
-</html></div>
-</div>
+</html></div></section>
   </div>
 </div>
 <script>
-const URL_MAP = {"/": "dashboard", "/cadastros/filiais": "filiais", "/cadastros/plano-contas": "plano_contas", "/cadastros/centros-custo": "centros_custo", "/cadastros/usuarios": "usuarios", "/budget/ciclo": "ciclo", "/budget/versoes": "versoes", "/budget/entrada": "entrada", "/budget/aprovacao": "aprovacao", "/receitas/pos-venda": "pos_venda", "/receitas/comissoes": "comissoes", "/headcount/colaboradores": "colaboradores", "/headcount/folha": "folha", "/opex/despesas": "despesas", "/opex/capex": "capex", "/analise/bvsr": "bvsr", "/analise/dre": "dre", "/analise/forecast": "forecast"};
+const URL_MAP = {
+  "/": "dashboard",
+  "/cadastros/filiais": "filiais",
+  "/cadastros/plano-contas": "plano_contas",
+  "/cadastros/centros-custo": "centros_custo",
+  "/cadastros/usuarios": "usuarios",
+  "/budget/ciclo": "ciclo",
+  "/budget/versoes": "versoes",
+  "/budget/entrada": "entrada",
+  "/budget/aprovacao": "aprovacao",
+  "/receitas/pos-venda": "pos_venda",
+  "/receitas/comissoes": "comissoes",
+  "/headcount/colaboradores": "colaboradores",
+  "/headcount/folha": "folha",
+  "/opex/despesas": "despesas",
+  "/opex/capex": "capex",
+  "/analise/bvsr": "bvsr",
+  "/analise/dre": "dre",
+  "/analise/forecast": "forecast"
+};
 
-function navigate(pid) {
-  if (!pid || !document.getElementById("screen-" + pid)) pid = "dashboard";
-  document.querySelectorAll(".screen").forEach(s => { s.style.display = "none"; s.classList.remove("active"); });
-  const scr = document.getElementById("screen-" + pid);
-  scr.style.display = "flex";
-  scr.classList.add("active");
+function navigate(pageId) {
+  document.querySelectorAll(".page-section").forEach(s => s.classList.remove("active"));
+  const sec = document.getElementById("page-" + pageId);
+  if (sec) sec.classList.add("active");
   document.querySelectorAll(".nav-item").forEach(a => {
-    const ap = a.dataset.page;
-    a.classList.toggle("active", ap === pid);
+    a.classList.toggle("active", a.getAttribute("href") === "#" + pageId);
   });
-  history.replaceState(null, "", "#" + pid);
+  history.replaceState(null, "", "#" + pageId);
 }
 
-document.querySelectorAll("a[data-page]").forEach(a => {
-  a.addEventListener("click", e => { e.preventDefault(); navigate(a.dataset.page); });
-});
-
-document.querySelectorAll("a[href^='#']").forEach(a => {
-  const pid = a.getAttribute("href").slice(1);
-  if (document.getElementById("screen-" + pid)) {
-    a.addEventListener("click", e => { e.preventDefault(); navigate(pid); });
+// Liga navegação no sidebar e links internos
+document.querySelectorAll("a[href]").forEach(a => {
+  const href = a.getAttribute("href") || "";
+  if (href.startsWith("#")) {
+    const pid = href.slice(1);
+    if (document.getElementById("page-" + pid)) {
+      a.addEventListener("click", e => { e.preventDefault(); navigate(pid); });
+    }
   }
 });
 
+// Bloqueia forms POST
 document.querySelectorAll("form").forEach(f => {
   f.addEventListener("submit", e => {
     e.preventDefault();
-    alert("Visualização estática — formulários não funcionam sem o servidor.\nUse o sistema completo via FastAPI para cadastrar dados.");
+    alert("Visualização estática — sem servidor.\nPara cadastrar dados use a versão com backend.");
   });
 });
 
 const hash = location.hash.replace("#", "");
-navigate(hash);
+navigate(document.getElementById("page-" + hash) ? hash : "dashboard");
 </script>
 </body>
 </html>
