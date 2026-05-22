@@ -203,9 +203,111 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar" id="sidebar">
-    
-  </aside>
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+    <div class="logo-mark">ROV</div>
+    <div>
+      <div class="logo-text">Rota Oeste</div>
+      <div class="logo-sub">sis. orçamentário</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Visão Geral</div>
+    <a href="#dashboard" class="nav-item active">
+      <i class="ti ti-layout-dashboard"></i>Dashboard
+    </a>
+    <a href="/alertas" class="nav-item ">
+      <i class="ti ti-bell"></i>Alertas<span class="nav-badge">0</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Cadastros</div>
+    <a href="#filiais" class="nav-item ">
+      <i class="ti ti-building"></i>Empresas e Filiais
+    </a>
+    <a href="#plano_contas" class="nav-item ">
+      <i class="ti ti-list-numbers"></i>Plano de Contas
+    </a>
+    <a href="#centros_custo" class="nav-item ">
+      <i class="ti ti-sitemap"></i>Centros de Custo
+    </a>
+    <a href="#usuarios" class="nav-item ">
+      <i class="ti ti-users"></i>Usuários
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Budget</div>
+    <a href="#ciclo" class="nav-item ">
+      <i class="ti ti-calendar-event"></i>Ciclo Orçamentário
+    </a>
+    <a href="#entrada" class="nav-item ">
+      <i class="ti ti-pencil"></i>Entrada de Budget
+    </a>
+    <a href="#aprovacao" class="nav-item ">
+      <i class="ti ti-checks"></i>Aprovação
+    </a>
+    <a href="#versoes" class="nav-item ">
+      <i class="ti ti-history"></i>Versões
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Receitas</div>
+    <a href="#pos_venda" class="nav-item ">
+      <i class="ti ti-tools"></i>Pós-venda
+    </a>
+    <a href="#comissoes" class="nav-item ">
+      <i class="ti ti-currency-dollar"></i>Comissões
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Headcount</div>
+    <a href="#colaboradores" class="nav-item ">
+      <i class="ti ti-id-badge"></i>Colaboradores
+    </a>
+    <a href="#folha" class="nav-item ">
+      <i class="ti ti-report-money"></i>Folha Orçada
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">OPEX</div>
+    <a href="#despesas" class="nav-item ">
+      <i class="ti ti-receipt"></i>Despesas Oper.
+    </a>
+    <a href="#capex" class="nav-item ">
+      <i class="ti ti-truck"></i>CAPEX
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Análise</div>
+    <a href="#bvsr" class="nav-item ">
+      <i class="ti ti-chart-bar"></i>Budget vs Real
+    </a>
+    <a href="#dre" class="nav-item ">
+      <i class="ti ti-file-analytics"></i>DRE Gerencial
+    </a>
+    <a href="#forecast" class="nav-item ">
+      <i class="ti ti-trending-up"></i>Forecast
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">CT</div>
+      <div>
+        <div class="user-name">Cleiton Trajano</div>
+        <div class="user-role">controller · grupo rov</div>
+      </div>
+      <i class="ti ti-settings" style="font-size:14px;color:rgba(255,255,255,.25);margin-left:auto"></i>
+    </div>
+  </div>
+  </nav>
   <div class="main">
     <section id="page-dashboard" class="page-section"><div class="topbar"><div>
       <span class="page-title">Dashboard</span>
@@ -12881,35 +12983,36 @@ const URL_MAP = {
 };
 
 function navigate(pageId) {
-  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-  const sec = document.getElementById('page-' + pageId);
-  if (sec) sec.classList.add('active');
-  document.querySelectorAll('.nav-link').forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === '#' + pageId);
+  document.querySelectorAll(".page-section").forEach(s => s.classList.remove("active"));
+  const sec = document.getElementById("page-" + pageId);
+  if (sec) sec.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(a => {
+    a.classList.toggle("active", a.getAttribute("href") === "#" + pageId);
   });
-  history.replaceState(null, '', '#' + pageId);
+  history.replaceState(null, "", "#" + pageId);
 }
 
-// Liga todos os links internos
-document.querySelectorAll('a[href]').forEach(a => {
-  const href = a.getAttribute('href') || '';
-  const pid = href.startsWith('#') ? href.slice(1) : null;
-  if (pid && document.getElementById('page-' + pid)) {
-    a.addEventListener('click', e => { e.preventDefault(); navigate(pid); });
+// Liga navegação no sidebar e links internos
+document.querySelectorAll("a[href]").forEach(a => {
+  const href = a.getAttribute("href") || "";
+  if (href.startsWith("#")) {
+    const pid = href.slice(1);
+    if (document.getElementById("page-" + pid)) {
+      a.addEventListener("click", e => { e.preventDefault(); navigate(pid); });
+    }
   }
 });
 
-// Bloqueia formulários POST com aviso amigável
-document.querySelectorAll('form').forEach(f => {
-  f.addEventListener('submit', e => {
+// Bloqueia forms POST
+document.querySelectorAll("form").forEach(f => {
+  f.addEventListener("submit", e => {
     e.preventDefault();
-    alert('Visualização estática — sem servidor.\nPara cadastrar dados use a versão com backend.');
+    alert("Visualização estática — sem servidor.\nPara cadastrar dados use a versão com backend.");
   });
 });
 
-// Inicia
-const hash = location.hash.replace('#','');
-navigate(document.getElementById('page-' + hash) ? hash : 'dashboard');
+const hash = location.hash.replace("#", "");
+navigate(document.getElementById("page-" + hash) ? hash : "dashboard");
 </script>
 </body>
 </html>
